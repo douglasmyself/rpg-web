@@ -1,1 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Web Quest</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>⚔️ RPG Web Quest ⚔️</h1>
+        
+        <div class="stats-panel">
+            <div class="card">
+                <h3>Herói</h3>
+                <p id="hero-name">Guerreiro</p>
+                <p>HP: <span id="hero-hp">140</span>/140</p>
+                <p>Poções: <span id="hero-pots">2</span></p>
+            </div>
+            <div class="card">
+                <h3>Inimigo</h3>
+                <p id="enemy-name">Goblin Ladrão</p>
+                <p>HP: <span id="enemy-hp">50</span></p>
+            </div>
+        </div>
 
+        <div id="log-box" class="log-box">
+            A masmorra aguarda por ti. O combate vai começar!
+        </div>
+
+        <div class="controls">
+            <button onclick="atacar()" id="btn-attack">Atacar</button>
+            <button onclick="usarPocao()" id="btn-potion">Usar Poção</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

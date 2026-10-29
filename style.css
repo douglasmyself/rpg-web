@@ -1,1 +1,94 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #121214;
+    color: #e1e1e6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
 
+.game-container {
+    background-color: #202024;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    width: 400px;
+    text-align: center;
+}
+
+h1 {
+    color: #00b37e;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.stats-panel {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.card {
+    background-color: #29292e;
+    padding: 12px;
+    border-radius: 8px;
+    flex: 1;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.card h3 {
+    margin: 0 0 8px 0;
+    color: #fba94c;
+    font-size: 1rem;
+}
+
+.log-box {
+    background-color: #121214;
+    border: 1px solid #323238;
+    border-radius: 8px;
+    padding: 12px;
+    height: 100px;
+    overflow-y: auto;
+    text-align: left;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+    color: #c4c4cc;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+button:first-child {
+    background-color: #00b37e;
+    color: white;
+}
+
+button:first-child:hover {
+    background-color: #00875f;
+}
+
+button:last-child {
+    background-color: #fba94c;
+    color: #121214;
+}
+
+button:last-child:hover {
+    background-color: #e59438;
+}

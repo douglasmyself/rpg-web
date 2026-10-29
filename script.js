@@ -17,26 +17,24 @@ function log(mensagem) {
 function atacar() {
     if (heroi.hp <= 0 || inimigo.hp <= 0) return;
 
-    // Dano do herói
     let danoHeroi = Math.floor(Math.random() * 6) + (heroi.ataque - 3);
     inimigo.hp = Math.max(0, inimigo.hp - danoHeroi);
-    log(`🗡️ Você atacou o ${inimigo.nome} e causou ${danoHeroi} de dano!`);
+    log(`🗡️ Causaste ${danoHeroi} de dano ao ${inimigo.nome}!`);
 
     if (inimigo.hp === 0) {
-        log(`🏆 Vitória! Você derrotou o ${inimigo.nome}!`);
+        log(`🏆 Vitória! Derrotaste o ${inimigo.nome}!`);
         document.getElementById("btn-attack").disabled = true;
         document.getElementById("btn-potion").disabled = true;
         atualizarTela();
         return;
     }
 
-    // Retruca o inimigo
     let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
     heroi.hp = Math.max(0, heroi.hp - danoInimigo);
-    log(`💥 O ${inimigo.nome} revidou e te causou ${danoInimigo} de dano!`);
+    log(`💥 O ${inimigo.nome} contra-atacou e tirou ${danoInimigo} de HP!`);
 
     if (heroi.hp === 0) {
-        log(`💀 Você foi derrotado na masmorra... Game Over!`);
+        log(`💀 Foste derrotado na masmorra... Fim de jogo.`);
         document.getElementById("btn-attack").disabled = true;
         document.getElementById("btn-potion").disabled = true;
     }
@@ -51,16 +49,15 @@ function usarPocao() {
         let cura = 65;
         heroi.hp = Math.min(heroi.hpMax, heroi.hp + cura);
         heroi.pocoes--;
-        log(`🧪 ${heroi.nome} usou um Kit Médico e recuperou ${cura} de Vida!`);
+        log(`🧪 Usaste um Kit Médico e recuperaste ${cura} de HP!`);
     } else {
-        log(`❌ Você não tem mais nenhum Kit Médico!`);
+        log(`❌ Não tens mais nenhum Kit Médico!`);
         return;
     }
 
-    // Inimigo ataca enquanto você usa o Kit
     let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
     heroi.hp = Math.max(0, heroi.hp - danoInimigo);
-    log(`💥 Enquanto você usava o Kit Médico, o ${inimigo.nome} atacou e causou ${danoInimigo} de dano!`);
+    log(`💥 Enquanto usavas o Kit Médico, o ${inimigo.nome} atacou e tirou ${danoInimigo} de HP!`);
 
     atualizarTela();
 }

@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPG Web Quest</title>
+    <title>O Sobrevivente</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="game-container">
-        <h1>⚔️ RPG Web Quest ⚔️</h1>
+        <h1>⚔️ O SOBREVIVENTE ⚔️</h1>
         
         <div class="stats-panel">
             <div class="card">
                 <h3>Herói</h3>
                 <p id="hero-name">Guerreiro</p>
-                <p>HP: <span id="hero-hp">140</span>/140</p>
-                <p>Poções: <span id="hero-pots">2</span></p>
+                <p>Vida: <span id="hero-hp">140</span>/140</p>
+                <p>Kit Médico: <span id="hero-pots">2</span></p>
             </div>
             <div class="card">
                 <h3>Inimigo</h3>
-                <p id="enemy-name">Goblin Ladrão</p>
-                <p>HP: <span id="enemy-hp">50</span></p>
+                <p id="enemy-name">Ladrão</p>
+                <p>Vida: <span id="enemy-hp">50</span></p>
             </div>
         </div>
 
@@ -30,7 +30,7 @@
 
         <div class="controls">
             <button onclick="atacar()" id="btn-attack">Atacar</button>
-            <button onclick="usarPocao()" id="btn-potion">Usar Poção</button>
+            <button onclick="usarPocao()" id="btn-potion">Usar Kit Médico</button>
         </div>
     </div>
 

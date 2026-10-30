@@ -251,7 +251,7 @@
 </head>
 <body>
 
-<div class="version-tag">v1.8</div>
+<div class="version-tag">v1.9</div>
 
 <div class="game-card">
   <div class="title">⚔️ O SOBREVIVENTE ⚔️</div>
@@ -299,6 +299,7 @@
 <script>
   let nivelConta = 1;
   let rankingScores = [];
+  let nomeAtualJogador = "";
 
   let audioCtx = null;
 
@@ -473,6 +474,43 @@
     btnSkill.disabled = (heroi.cdHabilidade > 0);
   }
 
+  function iniciarJogoComNome(nomeFornecido) {
+    nomeAtualJogador = nomeFornecido;
+    heroi.nome = nomeFornecido;
+
+    // SELEÇÃO AUTOMÁTICA DO HERÓI MAIS FORTE COM BASE NO NÍVEL DA CONTA ATUAL
+    if (nivelConta >= 4) {
+      heroi.classe = "Mestre";
+      heroi.hp = 150; heroi.hpMax = 150; heroi.ataque = 32;
+      heroi.habilidade = "Bola de Fogo";
+      heroi.sprite = "🧙‍♂️🔥";
+    } else if (nivelConta === 3) {
+      heroi.classe = "Elite";
+      heroi.hp = 130; heroi.hpMax = 130; heroi.ataque = 26;
+      heroi.habilidade = "Espada de Ouro";
+      heroi.sprite = "🥷✨";
+    } else if (nivelConta === 2) {
+      heroi.classe = "Soldado";
+      heroi.hp = 120; heroi.hpMax = 120; heroi.ataque = 20;
+      heroi.habilidade = "Golpe de Escudo";
+      heroi.sprite = "🪖";
+    } else {
+      heroi.classe = "Guerreiro";
+      heroi.hp = 140; heroi.hpMax = 140; heroi.ataque = 18;
+      heroi.habilidade = "Golpe de Escudo";
+      heroi.sprite = "🛡️";
+    }
+
+    heroi.pocoes = 3;
+    heroi.cdHabilidade = 0;
+    heroi.golpesGastos = 0;
+    heroi.habilidadesGastas = 0;
+    faseAtual = 0;
+
+    log(`✨ ${heroi.nome} entrou na Masmorra! 🚀 Herói Automático: **${heroi.classe.toUpperCase()}** (Nível de Conta: ${nivelConta})`);
+    iniciarCombate();
+  }
+
   function iniciarCombate() {
     if (faseAtual >= inimigosDungeon.length) {
       log(`<br>========================================`);
@@ -486,6 +524,16 @@
         nivelConta++;
         let personagensNomes = ["", "Guerreiro", "Soldado", "Elite", "Mestre"];
         log(`🎉 **NÍVEL DE CONTA SUBIU PARA ${nivelConta}!** Novo Herói Desbloqueado: **${personagensNomes[nivelConta].toUpperCase()}**`);
+        log(`🔄 **A reiniciar automaticamente com o mesmo jogador (${nomeAtualJogador}) e o novo herói!**`);
+        
+        atualizarPlacarHTML();
+        log(`========================================`);
+
+        // AUTOMÁTICO: Reinicia imediatamente com o mesmo nome após 2.5 segundos, sem pedir nome de novo!
+        setTimeout(() => {
+          iniciarJogoComNome(nomeAtualJogador);
+        }, 2500);
+        return;
       } else {
         log(`👑 **VOCÊ JÁ ESTÁ NO NÍVEL MÁXIMO DA CONTA (MESTRE)!**`);
       }
@@ -493,6 +541,7 @@
       atualizarPlacarHTML();
       log(`========================================`);
       
+      // Se já estiver no nível máximo e zerar, permite trocar de jogador
       document.getElementById("actions-container").style.display = "none";
       document.getElementById("setup-container").style.display = "flex";
       document.getElementById("arcade-scoreboard").style.display = "block";
@@ -535,39 +584,7 @@
     input.value = "";
 
     if (!valor) return;
-    heroi.nome = valor;
-
-    // SELEÇÃO AUTOMÁTICA DO HERÓI MAIS FORTE COM BASE NO NÍVEL DA CONTA ATUAL
-    if (nivelConta >= 4) {
-      heroi.classe = "Mestre";
-      heroi.hp = 150; heroi.hpMax = 150; heroi.ataque = 32;
-      heroi.habilidade = "Bola de Fogo";
-      heroi.sprite = "🧙‍♂️🔥";
-    } else if (nivelConta === 3) {
-      heroi.classe = "Elite";
-      heroi.hp = 130; heroi.hpMax = 130; heroi.ataque = 26;
-      heroi.habilidade = "Espada de Ouro";
-      heroi.sprite = "🥷✨";
-    } else if (nivelConta === 2) {
-      heroi.classe = "Soldado";
-      heroi.hp = 120; heroi.hpMax = 120; heroi.ataque = 20;
-      heroi.habilidade = "Golpe de Escudo";
-      heroi.sprite = "🪖";
-    } else {
-      heroi.classe = "Guerreiro";
-      heroi.hp = 140; heroi.hpMax = 140; heroi.ataque = 18;
-      heroi.habilidade = "Golpe de Escudo";
-      heroi.sprite = "🛡️";
-    }
-
-    heroi.pocoes = 3;
-    heroi.cdHabilidade = 0;
-    heroi.golpesGastos = 0;
-    heroi.habilidadesGastas = 0;
-
-    log(`✨ ${heroi.nome} entrou na Masmorra! 🚀 Herói Automático: **${heroi.classe.toUpperCase()}** (Nível de Conta: ${nivelConta})`);
-    faseAtual = 0;
-    iniciarCombate();
+    iniciarJogoComNome(valor);
   }
 
   function animarAcao(atacante, alvo, tipo = "ataque") {
@@ -605,6 +622,7 @@
         spriteHeroElem.innerText = "😵";
         calcularEAdicionarScore(false);
         
+        // Em caso de derrota, aí sim abre o input para permitir um novo jogador digitar o nome
         document.getElementById("actions-container").style.display = "none";
         document.getElementById("setup-container").style.display = "flex";
         document.getElementById("arcade-scoreboard").style.display = "block";

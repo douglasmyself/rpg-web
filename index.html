@@ -251,7 +251,7 @@
 </head>
 <body>
 
-<div class="version-tag">v1.7</div>
+<div class="version-tag">v1.8</div>
 
 <div class="game-card">
   <div class="title">⚔️ O SOBREVIVENTE ⚔️</div>
@@ -481,10 +481,11 @@
       tocarSom('vitoria');
       calcularEAdicionarScore(true);
 
+      // Sobe o nível da conta cumulativamente ao zerar a masmorra (máximo 4)
       if (nivelConta < 4) {
         nivelConta++;
         let personagensNomes = ["", "Guerreiro", "Soldado", "Elite", "Mestre"];
-        log(`🎉 **NÍVEL DE CONTA SUBIU PARA ${nivelConta}!** Nível Máximo Disponível: **${personagensNomes[nivelConta].toUpperCase()}**`);
+        log(`🎉 **NÍVEL DE CONTA SUBIU PARA ${nivelConta}!** Novo Herói Desbloqueado: **${personagensNomes[nivelConta].toUpperCase()}**`);
       } else {
         log(`👑 **VOCÊ JÁ ESTÁ NO NÍVEL MÁXIMO DA CONTA (MESTRE)!**`);
       }
@@ -536,6 +537,7 @@
     if (!valor) return;
     heroi.nome = valor;
 
+    // SELEÇÃO AUTOMÁTICA DO HERÓI MAIS FORTE COM BASE NO NÍVEL DA CONTA ATUAL
     if (nivelConta >= 4) {
       heroi.classe = "Mestre";
       heroi.hp = 150; heroi.hpMax = 150; heroi.ataque = 32;
@@ -563,7 +565,7 @@
     heroi.golpesGastos = 0;
     heroi.habilidadesGastas = 0;
 
-    log(`✨ ${heroi.nome} entrou na Masmorra! 🚀 **Nível Máximo Disponível: ${heroi.classe.toUpperCase()}**`);
+    log(`✨ ${heroi.nome} entrou na Masmorra! 🚀 Herói Automático: **${heroi.classe.toUpperCase()}** (Nível de Conta: ${nivelConta})`);
     faseAtual = 0;
     iniciarCombate();
   }

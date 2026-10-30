@@ -33,6 +33,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow: hidden;
     }
 
     .title {
@@ -50,12 +51,84 @@
       margin-bottom: 15px;
     }
 
+    /* ARENA VISUAL DE ANIMAÇÃO DO COMBATE */
+    .battle-arena {
+      width: 100%;
+      height: 130px;
+      background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      padding: 15px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .character-sprite {
+      font-size: 50px;
+      transition: transform 0.2s ease, opacity 0.3s ease;
+      position: relative;
+      user-select: none;
+      filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));
+    }
+
+    /* Efeitos e Animações CSS */
+    .anim-attack-hero {
+      animation: attackHero 0.4s ease-in-out;
+    }
+
+    .anim-attack-enemy {
+      animation: attackEnemy 0.4s ease-in-out;
+    }
+
+    .anim-hit {
+      animation: takeHit 0.3s ease-in-out;
+    }
+
+    .anim-heal {
+      animation: healEffect 0.5s ease-in-out;
+    }
+
+    .anim-defeat {
+      transform: rotate(90deg) translateY(20px) !important;
+      opacity: 0.6;
+    }
+
+    @keyframes attackHero {
+      0% { transform: translateX(0); }
+      50% { transform: translateX(70px) scale(1.2); }
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes attackEnemy {
+      0% { transform: translateX(0); }
+      50% { transform: translateX(-70px) scale(1.2); }
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes takeHit {
+      0% { filter: drop-shadow(0 0 10px red); transform: scale(0.9); }
+      25% { transform: translateX(-8px); }
+      50% { transform: translateX(8px); }
+      75% { transform: translateX(-4px); }
+      100% { filter: none; transform: scale(1); }
+    }
+
+    @keyframes healEffect {
+      0% { filter: drop-shadow(0 0 12px #00ff66); transform: scale(1); }
+      50% { transform: scale(1.2) translateY(-10px); }
+      100% { filter: none; transform: scale(1); }
+    }
+
     /* Cards de Status (Herói e Inimigo) */
     .status-container {
       display: flex;
       gap: 15px;
       width: 100%;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
 
     .status-card {
@@ -63,25 +136,25 @@
       background-color: #22272e;
       border: 1px solid #373e47;
       border-radius: 8px;
-      padding: 14px;
+      padding: 12px;
     }
 
     .status-card h3 {
-      font-size: 16px;
+      font-size: 15px;
       color: #f08c00;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .status-info {
-      font-size: 14px;
+      font-size: 13px;
       color: #adbac7;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     /* Caixa de Log */
     .log-box {
       width: 100%;
-      height: 160px;
+      height: 140px;
       background-color: #2d333b;
       border: 1px solid #373e47;
       border-radius: 6px;
@@ -226,6 +299,12 @@
   <div class="title">⚔️ O SOBREVIVENTE ⚔️</div>
   <div class="account-level" id="account-level">Nível de Conta: 1</div>
 
+  <!-- ARENA ANIMADA DE BONEQUINHOS -->
+  <div class="battle-arena" id="battle-arena" style="display: none;">
+    <div class="character-sprite" id="sprite-hero">🛡️</div>
+    <div class="character-sprite" id="sprite-enemy">🥷</div>
+  </div>
+
   <!-- Cards de Status -->
   <div class="status-container" id="status-container" style="display: none;">
     <div class="status-card">
@@ -281,25 +360,29 @@
     pocoes: 3,
     habilidade: "Golpe de Escudo",
     cdHabilidade: 0,
-    // Métricas para calcular o Score de eficiência
     golpesGastos: 0,
-    habilidadesGastas: 0
+    habilidadesGastas: 0,
+    sprite: "⚔️"
   };
 
   let inimigo = {
     nome: "Ladrão",
     hp: 50,
-    ataque: 12
+    ataque: 12,
+    sprite: "🥷"
   };
 
   const inimigosDungeon = [
-    { nome: "Ladrão", hp: 50, ataque: 12 },
-    { nome: "Trapaceiro", hp: 80, ataque: 18 },
-    { nome: "Dragão das Sombras (Chefe)", hp: 100, ataque: 28 }
+    { nome: "Ladrão", hp: 50, ataque: 12, sprite: "🥷" },
+    { nome: "Trapaceiro", hp: 80, ataque: 18, sprite: "👺" },
+    { nome: "Dragão das Sombras (Chefe)", hp: 100, ataque: 28, sprite: "🐉" }
   ];
 
   let faseAtual = 0;
   let estado = "NOME";
+
+  const spriteHeroElem = document.getElementById("sprite-hero");
+  const spriteEnemyElem = document.getElementById("sprite-enemy");
 
   function salvarProgresso() {
     localStorage.setItem("rpg_nivel_conta", nivelConta);
@@ -314,7 +397,6 @@
       lista.innerHTML = `<li><span>Nenhum recorde ainda</span> <span>0 pts</span></li>`;
       return;
     }
-    // Ordenar do maior score para o menor
     rankingScores.sort((a, b) => b.score - a.score);
     rankingScores.forEach(item => {
       lista.innerHTML += `<li><span>${item.nome} (${item.classe})</span> <strong>${item.score} pts</strong></li>`;
@@ -322,7 +404,6 @@
   }
 
   function calcularEAdicionarScore(venceu) {
-    // Fórmula Arcade: Pontos base pela vitória + vida restante - penalidade por excesso de golpes e habilidades gastas
     let pontosVida = heroi.hp * 5;
     let bonusVitoria = venceu ? 500 : 100;
     let penalidadeAcoes = (heroi.golpesGastos * 5) + (heroi.habilidadesGastas * 10);
@@ -358,6 +439,9 @@
     document.getElementById("enemy-name").innerText = inimigo.nome;
     document.getElementById("enemy-hp").innerText = inimigo.hp;
 
+    spriteHeroElem.innerText = heroi.sprite;
+    spriteEnemyElem.innerText = inimigo.sprite;
+
     const btnSkill = document.getElementById("btn-skill");
     btnSkill.innerText = `${heroi.habilidade}${heroi.cdHabilidade > 0 ? ` (${heroi.cdHabilidade})` : ''}`;
     btnSkill.disabled = (heroi.cdHabilidade > 0);
@@ -385,6 +469,10 @@
       document.getElementById("actions-container").style.display = "none";
       document.getElementById("btn-restart").style.display = "block";
       document.getElementById("arcade-scoreboard").style.display = "block";
+      
+      // Animação de Vitória do Herói
+      spriteHeroElem.innerText = "👑";
+      spriteEnemyElem.classList.add("anim-defeat");
       return;
     }
 
@@ -392,6 +480,10 @@
     inimigo.nome = dadosInimigo.nome;
     inimigo.hp = dadosInimigo.hp;
     inimigo.ataque = dadosInimigo.ataque;
+    inimigo.sprite = dadosInimigo.sprite;
+
+    spriteEnemyElem.classList.remove("anim-defeat");
+    spriteHeroElem.classList.remove("anim-defeat");
 
     log(`<br>----------------------------------------`);
     log(`🚪 Entrando na Sala ${faseAtual + 1}...`);
@@ -399,6 +491,7 @@
 
     document.getElementById("setup-container").style.display = "none";
     document.getElementById("status-container").style.display = "flex";
+    document.getElementById("battle-arena").style.display = "flex";
     document.getElementById("actions-container").style.display = "flex";
     document.getElementById("btn-restart").style.display = "none";
     document.getElementById("arcade-scoreboard").style.display = "none";
@@ -433,22 +526,27 @@
         heroi.classe = "Mago";
         heroi.hp = 100; heroi.hpMax = 100; heroi.ataque = 22;
         heroi.habilidade = "Impacto Mágico";
+        heroi.sprite = "🧙‍♂️";
       } else if (valor === "3" && nivelConta >= 2) {
         heroi.classe = "Soldado";
         heroi.hp = 120; heroi.hpMax = 120; heroi.ataque = 20;
         heroi.habilidade = "Golpe de Escudo";
+        heroi.sprite = "🪖";
       } else if (valor === "4" && nivelConta >= 3) {
         heroi.classe = "Elite";
         heroi.hp = 130; heroi.hpMax = 130; heroi.ataque = 26;
         heroi.habilidade = "Espada de Ouro";
+        heroi.sprite = "🥷✨";
       } else if (valor === "5" && nivelConta >= 4) {
         heroi.classe = "Mestre";
         heroi.hp = 150; heroi.hpMax = 150; heroi.ataque = 32;
         heroi.habilidade = "Bola de Fogo";
+        heroi.sprite = "🧙‍♂️🔥";
       } else {
         heroi.classe = "Guerreiro";
         heroi.hp = 140; heroi.hpMax = 140; heroi.ataque = 18;
         heroi.habilidade = "Golpe de Escudo";
+        heroi.sprite = "🛡️";
       }
 
       heroi.pocoes = 3;
@@ -461,88 +559,124 @@
     }
   }
 
-  function contraAtaqueInimigo() {
-    let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
-    heroi.hp = Math.max(0, heroi.hp - danoInimigo);
-    log(`💥 O ${inimigo.nome} contra-atacou e tirou ${danoInimigo} de vida!`);
+  function animarAcao(atacante, alvo, tipo = "ataque") {
+    const elemAtacante = atacante === "heroi" ? spriteHeroElem : spriteEnemyElem;
+    const elemAlvo = alvo === "inimigo" ? spriteEnemyElem : spriteHeroElem;
 
-    if (heroi.cdHabilidade > 0) heroi.cdHabilidade--;
-
-    if (heroi.hp === 0) {
-      log(`💀 Você foi derrotado na masmorra... Fim de jogo.`);
-      calcularEAdicionarScore(false);
-      document.getElementById("btn-attack").disabled = true;
-      document.getElementById("btn-potion").disabled = true;
-      document.getElementById("btn-skill").disabled = true;
-      document.getElementById("btn-restart").style.display = "block";
-      document.getElementById("arcade-scoreboard").style.display = "block";
+    if (tipo === "ataque") {
+      elemAtacante.classList.add(atacante === "heroi" ? "anim-attack-hero" : "anim-attack-enemy");
+      setTimeout(() => {
+        elemAtacante.classList.remove("anim-attack-hero", "anim-attack-enemy");
+        elemAlvo.classList.add("anim-hit");
+        setTimeout(() => elemAlvo.classList.remove("anim-hit"), 300);
+      }, 200);
+    } else if (tipo === "cura") {
+      elemAtacante.classList.add("anim-heal");
+      setTimeout(() => elemAtacante.classList.remove("anim-heal"), 500);
     }
+  }
 
-    atualizarTela();
+  function contraAtaqueInimigo() {
+    animarAcao("inimigo", "heroi", "ataque");
+
+    setTimeout(() => {
+      let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
+      heroi.hp = Math.max(0, heroi.hp - danoInimigo);
+      log(`💥 O ${inimigo.nome} contra-atacou e tirou ${danoInimigo} de vida!`);
+
+      if (heroi.cdHabilidade > 0) heroi.cdHabilidade--;
+
+      if (heroi.hp === 0) {
+        log(`💀 Você foi derrotado na masmorra... Fim de jogo.`);
+        spriteHeroElem.classList.add("anim-defeat");
+        spriteHeroElem.innerText = "😵";
+        calcularEAdicionarScore(false);
+        document.getElementById("btn-attack").disabled = true;
+        document.getElementById("btn-potion").disabled = true;
+        document.getElementById("btn-skill").disabled = true;
+        document.getElementById("btn-restart").style.display = "block";
+        document.getElementById("arcade-scoreboard").style.display = "block";
+      }
+
+      atualizarTela();
+    }, 300);
   }
 
   function atacar() {
     if (heroi.hp <= 0 || inimigo.hp <= 0) return;
 
     heroi.golpesGastos++;
-    let danoHeroi = Math.floor(Math.random() * 6) + (heroi.ataque - 3);
-    inimigo.hp = Math.max(0, inimigo.hp - danoHeroi);
-    log(`🗡️ Você causou ${danoHeroi} de dano ao ${inimigo.nome}!`);
+    animarAcao("heroi", "inimigo", "ataque");
 
-    if (inimigo.hp === 0) {
-      log(`🏆 Você derrotou o ${inimigo.nome} com sucesso!`);
-      faseAtual++;
-      setTimeout(iniciarCombate, 1200);
-      atualizarTela();
-      return;
-    }
+    setTimeout(() => {
+      let danoHeroi = Math.floor(Math.random() * 6) + (heroi.ataque - 3);
+      inimigo.hp = Math.max(0, inimigo.hp - danoHeroi);
+      log(`🗡️ Você causou ${danoHeroi} de dano ao ${inimigo.nome}!`);
 
-    contraAtaqueInimigo();
+      if (inimigo.hp === 0) {
+        log(`🏆 Você derrotou o ${inimigo.nome} com sucesso!`);
+        spriteEnemyElem.classList.add("anim-defeat");
+        spriteEnemyElem.innerText = "💫";
+        faseAtual++;
+        setTimeout(iniciarCombate, 1400);
+        atualizarTela();
+        return;
+      }
+
+      contraAtaqueInimigo();
+    }, 300);
   }
 
   function usarHabilidade() {
     if (heroi.hp <= 0 || inimigo.hp <= 0 || heroi.cdHabilidade > 0) return;
 
     heroi.habilidadesGastas++;
-    let danoEspecial = 0;
+    animarAcao("heroi", "inimigo", "ataque");
 
-    if (heroi.habilidade === "Golpe de Escudo") {
-      danoEspecial = heroi.ataque + 8;
-      inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
-      log(`🛡️💥 Você desferiu um GOLPE DE ESCUDO e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
-      heroi.cdHabilidade = 2;
-    } else if (heroi.habilidade === "Espada de Ouro") {
-      danoEspecial = heroi.ataque + 18;
-      inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
-      log(`⚔️✨ VOCÊ USOU A ESPADA DE OURO! Causou ${danoEspecial} de dano crítico ao ${inimigo.nome}!`);
-      heroi.cdHabilidade = 3;
-    } else if (heroi.habilidade === "Bola de Fogo") {
-      danoEspecial = heroi.ataque + 28;
-      inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
-      log(`🔥 DESTRUIÇÃO! Você lançou uma BOLA DE FOGO e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
-      heroi.cdHabilidade = 3;
-    } else {
-      danoEspecial = heroi.ataque + 12;
-      inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
-      log(`✨ Você usou Impacto Mágico e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
-      heroi.cdHabilidade = 2;
-    }
+    setTimeout(() => {
+      let danoEspecial = 0;
 
-    if (inimigo.hp === 0) {
-      log(`🏆 Você derrotou o ${inimigo.nome} com sucesso!`);
-      faseAtual++;
-      setTimeout(iniciarCombate, 1200);
-      atualizarTela();
-      return;
-    }
+      if (heroi.habilidade === "Golpe de Escudo") {
+        danoEspecial = heroi.ataque + 8;
+        inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
+        log(`🛡️💥 Você desferiu um GOLPE DE ESCUDO e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
+        heroi.cdHabilidade = 2;
+      } else if (heroi.habilidade === "Espada de Ouro") {
+        danoEspecial = heroi.ataque + 18;
+        inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
+        log(`⚔️✨ VOCÊ USOU A ESPADA DE OURO! Causou ${danoEspecial} de dano crítico ao ${inimigo.nome}!`);
+        heroi.cdHabilidade = 3;
+      } else if (heroi.habilidade === "Bola de Fogo") {
+        danoEspecial = heroi.ataque + 28;
+        inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
+        log(`🔥 DESTRUIÇÃO! Você lançou uma BOLA DE FOGO e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
+        heroi.cdHabilidade = 3;
+      } else {
+        danoEspecial = heroi.ataque + 12;
+        inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
+        log(`✨ Você usou Impacto Mágico e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
+        heroi.cdHabilidade = 2;
+      }
 
-    contraAtaqueInimigo();
+      if (inimigo.hp === 0) {
+        log(`🏆 Você derrotou o ${inimigo.nome} com sucesso!`);
+        spriteEnemyElem.classList.add("anim-defeat");
+        spriteEnemyElem.innerText = "💫";
+        faseAtual++;
+        setTimeout(iniciarCombate, 1400);
+        atualizarTela();
+        return;
+      }
+
+      contraAtaqueInimigo();
+    }, 300);
   }
 
   function usarPocao() {
     if (heroi.hp <= 0 || inimigo.hp <= 0) return;
 
     if (heroi.pocoes > 0) {
+      animarAcao("heroi", "heroi", "cura");
       let cura = 65;
       heroi.hp = Math.min(heroi.hpMax, heroi.hp + cura);
       heroi.pocoes--;
@@ -561,6 +695,7 @@
     
     document.getElementById("log-box").innerHTML = "";
     document.getElementById("status-container").style.display = "none";
+    document.getElementById("battle-arena").style.display = "none";
     document.getElementById("actions-container").style.display = "none";
     document.getElementById("btn-restart").style.display = "none";
     document.getElementById("setup-container").style.display = "flex";

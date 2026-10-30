@@ -229,7 +229,6 @@
 </div>
 
 <script>
-  // Nível da Conta e Personagens Desbloqueados
   let nivelConta = parseInt(localStorage.getItem("rpg_nivel_conta")) || 1;
 
   let heroi = {
@@ -239,7 +238,7 @@
     hpMax: 140,
     ataque: 18,
     pocoes: 3,
-    habilidade: "Escudo",
+    habilidade: "Golpe de Escudo",
     cdHabilidade: 0
   };
 
@@ -288,7 +287,6 @@
       log(`<br>========================================`);
       log(`🏆 PARABÉNS! ${heroi.nome}, VOCÊ ZEROU A MASMORRA!`);
       
-      // Checar se subiu de nível na conta
       if (nivelConta < 3) {
         nivelConta++;
         salvarProgresso();
@@ -296,7 +294,7 @@
         log(`<br>🎉 **PARABÉNS! SUAS VITÓRIAS TE LEVARAM AO NÍVEL ${nivelConta}!**`);
         log(`🔓 **VOCÊ DESBLOQUEOU O PERSONAGEM: ${novoPersonagem.toUpperCase()}!**`);
       } else if (nivelConta === 3) {
-        nivelConta = 4; // Liberou Mestre
+        nivelConta = 4;
         salvarProgresso();
         log(`<br>👑 **PARABÉNS LENDÁRIO! VOCÊ ATINGIU O NÍVEL MÁXIMO!**`);
         log(`🔓 **VOCÊ DESBLOQUEOU O PERSONAGEM SUPREMO: MESTRE!**`);
@@ -338,10 +336,10 @@
       heroi.nome = valor;
       log(`Digite o nome do seu herói: ${heroi.nome}`);
       log(`<br>Escolha a sua Classe:`);
-      log(`1. Guerreiro (Vida alta, Habilidade: Escudo)`);
+      log(`1. Guerreiro (Vida alta, Habilidade: Golpe de Escudo)`);
       log(`2. Mago (Dano alto, Habilidade: Impacto Mágico)`);
       
-      if (nivelConta >= 2) log(`3. 🔓 Soldado (Equilibrado, Habilidade: Escudo Reforçado)`);
+      if (nivelConta >= 2) log(`3. 🔓 Soldado (Equilibrado, Habilidade: Golpe de Escudo)`);
       if (nivelConta >= 3) log(`4. 🔓 Elite (Dano muito alto, Habilidade: Espada de Ouro)`);
       if (nivelConta >= 4) log(`5. 👑 Mestre (Classe Suprema, Habilidade: Bola de Fogo)`);
 
@@ -355,7 +353,7 @@
       } else if (valor === "3" && nivelConta >= 2) {
         heroi.classe = "Soldado";
         heroi.hp = 120; heroi.hpMax = 120; heroi.ataque = 20;
-        heroi.habilidade = "Escudo";
+        heroi.habilidade = "Golpe de Escudo";
       } else if (valor === "4" && nivelConta >= 3) {
         heroi.classe = "Elite";
         heroi.hp = 130; heroi.hpMax = 130; heroi.ataque = 26;
@@ -367,7 +365,7 @@
       } else {
         heroi.classe = "Guerreiro";
         heroi.hp = 140; heroi.hpMax = 140; heroi.ataque = 18;
-        heroi.habilidade = "Escudo";
+        heroi.habilidade = "Golpe de Escudo";
       }
 
       heroi.pocoes = 3;
@@ -377,12 +375,8 @@
     }
   }
 
-  function contraAtaqueInimigo(escudoAtivo = false) {
+  function contraAtaqueInimigo() {
     let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
-    if (escudoAtivo) {
-      danoInimigo = Math.max(1, Math.floor(danoInimigo / 2));
-      log(`🛡️ Seu Escudo bloqueou metade do dano!`);
-    }
     heroi.hp = Math.max(0, heroi.hp - danoInimigo);
     log(`💥 O ${inimigo.nome} contra-atacou e tirou ${danoInimigo} de vida!`);
 
@@ -420,26 +414,27 @@
   function usarHabilidade() {
     if (heroi.hp <= 0 || inimigo.hp <= 0 || heroi.cdHabilidade > 0) return;
 
-    let usoEscudo = false;
+    let danoEspecial = 0;
 
-    if (heroi.habilidade === "Escudo") {
-      log(`🛡️ Você ativou o Escudo! Defesa aumentada neste turno.`);
-      usoEscudo = true;
+    if (heroi.habilidade === "Golpe de Escudo") {
+      danoEspecial = heroi.ataque + 8;
+      inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
+      log(`🛡️💥 Você desferiu um GOLPE DE ESCUDO e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
       heroi.cdHabilidade = 2;
     } else if (heroi.habilidade === "Espada de Ouro") {
-      let danoEspecial = heroi.ataque + 18;
+      danoEspecial = heroi.ataque + 18;
       inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
       log(`⚔️✨ VOCÊ USOU A ESPADA DE OURO! Causou ${danoEspecial} de dano crítico ao ${inimigo.nome}!`);
       heroi.cdHabilidade = 3;
     } else if (heroi.habilidade === "Bola de Fogo") {
-      let danoEspecial = heroi.ataque + 28;
+      danoEspecial = heroi.ataque + 28;
       inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
       log(`🔥 DESTRUIÇÃO! Você lançou uma BOLA DE FOGO e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
       heroi.cdHabilidade = 3;
     } else {
-      let danoEspecial = heroi.ataque + 12;
+      danoEspecial = heroi.ataque + 12;
       inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
-      log(`✨ Você usou Impacto Mágico e causou ${danoEspecial} de dano!`);
+      log(`✨ Você usou Impacto Mágico e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
       heroi.cdHabilidade = 2;
     }
 
@@ -451,7 +446,7 @@
       return;
     }
 
-    contraAtaqueInimigo(usoEscudo);
+    contraAtaqueInimigo();
   }
 
   function usarPocao() {
@@ -495,7 +490,6 @@
     if (e.key === "Enter") processarSetup();
   });
 
-  // Inicialização
   salvarProgresso();
   log("========================================");
   log("        ⚔️ O SOBREVIVENTE ⚔️");

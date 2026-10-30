@@ -50,7 +50,7 @@
       margin-bottom: 10px;
     }
 
-    /* ARENA VISUAL MAIS COMPACTA */
+    /* ARENA VISUAL COMPACTA */
     .battle-arena {
       width: 100%;
       height: 100px;
@@ -133,7 +133,7 @@
       margin-bottom: 3px;
     }
 
-    /* Caixa de Log Reduzida para caber na tela */
+    /* Caixa de Log Reduzida */
     .log-box {
       width: 100%;
       height: 110px;
@@ -149,7 +149,7 @@
       margin-bottom: 10px;
     }
 
-    /* Placar estilo Fliperama Compacto */
+    /* Placar estilo Fliperama */
     .scoreboard {
       width: 100%;
       background-color: #161b22;
@@ -303,6 +303,75 @@
   let nivelConta = 1;
   let rankingScores = [];
 
+  // Gerador de Som Estilo Arcade (Web Audio API)
+  let audioCtx = null;
+
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
+
+  function tocarSom(tipo) {
+    try {
+      initAudio();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      let osc = audioCtx.createOscillator();
+      let gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      let now = audioCtx.currentTime;
+
+      if (tipo === 'ataque') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.15);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      } else if (tipo === 'habilidade') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampDown = true;
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } else if (tipo === 'cura') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(350, now);
+        osc.frequency.exponentialRampToValueAtTime(700, now + 0.3);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (tipo === 'vitoria') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.setValueAtTime(390, now + 0.1);
+        osc.frequency.setValueAtTime(520, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+        osc.start(now);
+        osc.stop(now + 0.4);
+      } else if (tipo === 'derrota') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(50, now + 0.4);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+        osc.start(now);
+        osc.stop(now + 0.4);
+      }
+    } catch(e) {
+      // Ignora restrições de autoplay do navegador se houver
+    }
+  }
+
   let heroi = {
     nome: "Herói",
     classe: "Guerreiro",
@@ -398,6 +467,7 @@
       log(`<br>========================================`);
       log(`🏆 PARABÉNS! ${heroi.nome}, VOCÊ ZEROU A MASMORRA!`);
       
+      tocarSom('vitoria');
       calcularEAdicionarScore(true);
 
       if (nivelConta < 3) {
@@ -411,7 +481,6 @@
 
       atualizarPlacarHTML();
       log(`========================================`);
-      // Oculta botões de ataque e mostra APENAS o de próximo jogador ao zerar o jogo
       document.getElementById("actions-container").style.display = "none";
       document.getElementById("btn-restart").style.display = "block";
       document.getElementById("arcade-scoreboard").style.display = "block";
@@ -523,6 +592,7 @@
 
   function contraAtaqueInimigo() {
     animarAcao("inimigo", "heroi", "ataque");
+    tocarSom('ataque');
 
     setTimeout(() => {
       let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
@@ -533,10 +603,10 @@
 
       if (heroi.hp === 0) {
         log(`💀 Você foi derrotado na masmorra... Fim de jogo.`);
+        tocarSom('derrota');
         spriteHeroElem.classList.add("anim-defeat");
         spriteHeroElem.innerText = "😵";
         calcularEAdicionarScore(false);
-        // Oculta botões de batalha e mostra o botão de próximo jogador ao perder
         document.getElementById("actions-container").style.display = "none";
         document.getElementById("btn-restart").style.display = "block";
         document.getElementById("arcade-scoreboard").style.display = "block";
@@ -551,6 +621,7 @@
 
     heroi.golpesGastos++;
     animarAcao("heroi", "inimigo", "ataque");
+    tocarSom('ataque');
 
     setTimeout(() => {
       let danoHeroi = Math.floor(Math.random() * 6) + (heroi.ataque - 3);
@@ -562,7 +633,6 @@
         spriteEnemyElem.classList.add("anim-defeat");
         spriteEnemyElem.innerText = "💫";
         faseAtual++;
-        // Avança de sala automaticamente sem exibir o botão de próximo jogador
         setTimeout(iniciarCombate, 1600);
         atualizarTela();
         return;
@@ -577,6 +647,7 @@
 
     heroi.habilidadesGastas++;
     animarAcao("heroi", "inimigo", "ataque");
+    tocarSom('habilidade');
 
     setTimeout(() => {
       let danoEspecial = 0;
@@ -608,7 +679,6 @@
         spriteEnemyElem.classList.add("anim-defeat");
         spriteEnemyElem.innerText = "💫";
         faseAtual++;
-        // Avança de sala automaticamente
         setTimeout(iniciarCombate, 1600);
         atualizarTela();
         return;
@@ -623,6 +693,7 @@
 
     if (heroi.pocoes > 0) {
       animarAcao("heroi", "heroi", "cura");
+      tocarSom('cura');
       let cura = 65;
       heroi.hp = Math.min(heroi.hpMax, heroi.hp + cura);
       heroi.pocoes--;

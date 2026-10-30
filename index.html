@@ -348,7 +348,6 @@
         osc.start(now);
         osc.stop(now + 0.3);
       } else if (tipo === 'inimigo_derrotado') {
-        // Som alegre de vitória parcial (quando o inimigo perde)
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(300, now);
         osc.frequency.setValueAtTime(450, now + 0.1);
@@ -375,9 +374,7 @@
         osc.start(now);
         osc.stop(now + 0.4);
       }
-    } catch(e) {
-      // Ignora restrições de autoplay
-    }
+    } catch(e) {}
   }
 
   let heroi = {
@@ -434,11 +431,23 @@
     
     let scoreFinal = Math.max(10, bonusVitoria + pontosVida - penalidadeAcoes);
     
-    rankingScores.push({
-      nome: heroi.nome,
-      classe: heroi.classe,
-      score: scoreFinal
-    });
+    // Verifica se já existe um registro com o mesmo nome (ignorando maiúsculas/minúsculas)
+    let indexExistente = rankingScores.findIndex(item => item.nome.toLowerCase() === heroi.nome.toLowerCase());
+    
+    if (indexExistente !== -1) {
+      // Se já existe, substitui pelo novo score (ou mantém o maior, aqui substituímos pelo mais recente conforme pedido)
+      rankingScores[indexExistente] = {
+        nome: heroi.nome,
+        classe: heroi.classe,
+        score: scoreFinal
+      };
+    } else {
+      rankingScores.push({
+        nome: heroi.nome,
+        classe: heroi.classe,
+        score: scoreFinal
+      });
+    }
     
     atualizarPlacarHTML();
 
@@ -638,7 +647,7 @@
 
       if (inimigo.hp === 0) {
         log(`🏆 Você derrotou o ${inimigo.nome} com sucesso!`);
-        tocarSom('inimigo_derrotado'); // Toca o som quando o inimigo perde
+        tocarSom('inimigo_derrotado');
         spriteEnemyElem.classList.add("anim-defeat");
         spriteEnemyElem.innerText = "💫";
         faseAtual++;
@@ -685,7 +694,7 @@
 
       if (inimigo.hp === 0) {
         log(`🏆 Você derrotou o ${inimigo.nome} com sucesso!`);
-        tocarSom('inimigo_derrotado'); // Toca o som quando o inimigo perde com habilidade
+        tocarSom('inimigo_derrotado');
         spriteEnemyElem.classList.add("anim-defeat");
         spriteEnemyElem.innerText = "💫";
         faseAtual++;

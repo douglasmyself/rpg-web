@@ -69,27 +69,27 @@
 
     .character-sprite {
       font-size: 50px;
-      transition: transform 0.2s ease, opacity 0.3s ease;
+      transition: transform 0.4s ease, opacity 0.5s ease;
       position: relative;
       user-select: none;
       filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));
     }
 
-    /* Efeitos e Animações CSS */
+    /* Efeitos e Animações CSS mais lentas e suaves */
     .anim-attack-hero {
-      animation: attackHero 0.4s ease-in-out;
+      animation: attackHero 0.8s ease-in-out;
     }
 
     .anim-attack-enemy {
-      animation: attackEnemy 0.4s ease-in-out;
+      animation: attackEnemy 0.8s ease-in-out;
     }
 
     .anim-hit {
-      animation: takeHit 0.3s ease-in-out;
+      animation: takeHit 0.6s ease-in-out;
     }
 
     .anim-heal {
-      animation: healEffect 0.5s ease-in-out;
+      animation: healEffect 0.8s ease-in-out;
     }
 
     .anim-defeat {
@@ -110,16 +110,16 @@
     }
 
     @keyframes takeHit {
-      0% { filter: drop-shadow(0 0 10px red); transform: scale(0.9); }
-      25% { transform: translateX(-8px); }
-      50% { transform: translateX(8px); }
-      75% { transform: translateX(-4px); }
+      0% { filter: drop-shadow(0 0 15px red); transform: scale(0.85); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-5px); }
       100% { filter: none; transform: scale(1); }
     }
 
     @keyframes healEffect {
-      0% { filter: drop-shadow(0 0 12px #00ff66); transform: scale(1); }
-      50% { transform: scale(1.2) translateY(-10px); }
+      0% { filter: drop-shadow(0 0 15px #00ff66); transform: scale(1); }
+      50% { transform: scale(1.25) translateY(-12px); }
       100% { filter: none; transform: scale(1); }
     }
 
@@ -348,8 +348,9 @@
 </div>
 
 <script>
-  let nivelConta = parseInt(localStorage.getItem("rpg_nivel_conta")) || 1;
-  let rankingScores = JSON.parse(localStorage.getItem("rpg_ranking")) || [];
+  // Variáveis em memória (sem localStorage, resetam ao atualizar a página)
+  let nivelConta = 1;
+  let rankingScores = [];
 
   let heroi = {
     nome: "Herói",
@@ -384,13 +385,8 @@
   const spriteHeroElem = document.getElementById("sprite-hero");
   const spriteEnemyElem = document.getElementById("sprite-enemy");
 
-  function salvarProgresso() {
-    localStorage.setItem("rpg_nivel_conta", nivelConta);
-    document.getElementById("account-level").innerText = `Nível de Conta: ${nivelConta}`;
-    atualizarPlacarHTML();
-  }
-
   function atualizarPlacarHTML() {
+    document.getElementById("account-level").innerText = `Nível de Conta: ${nivelConta}`;
     const lista = document.getElementById("score-list");
     lista.innerHTML = "";
     if (rankingScores.length === 0) {
@@ -416,7 +412,6 @@
       score: scoreFinal
     });
     
-    localStorage.setItem("rpg_ranking", JSON.stringify(rankingScores));
     atualizarPlacarHTML();
 
     log(`<br>🎮 **ESTATÍSTICAS DA PARTIDA DE ${heroi.nome.toUpperCase()}**:`);
@@ -456,21 +451,19 @@
 
       if (nivelConta < 3) {
         nivelConta++;
-        salvarProgresso();
         let novoPersonagem = nivelConta === 2 ? "Soldado" : "Elite";
         log(`🎉 **NÍVEL DE CONTA SUBIU PARA ${nivelConta}! Desbloqueado: ${novoPersonagem.toUpperCase()}**`);
       } else if (nivelConta === 3) {
         nivelConta = 4;
-        salvarProgresso();
         log(`👑 **NÍVEL MÁXIMO ATINGIDO! Desbloqueado: MESTRE!**`);
       }
 
+      atualizarPlacarHTML();
       log(`========================================`);
       document.getElementById("actions-container").style.display = "none";
       document.getElementById("btn-restart").style.display = "block";
       document.getElementById("arcade-scoreboard").style.display = "block";
       
-      // Animação de Vitória do Herói
       spriteHeroElem.innerText = "👑";
       spriteEnemyElem.classList.add("anim-defeat");
       return;
@@ -568,11 +561,11 @@
       setTimeout(() => {
         elemAtacante.classList.remove("anim-attack-hero", "anim-attack-enemy");
         elemAlvo.classList.add("anim-hit");
-        setTimeout(() => elemAlvo.classList.remove("anim-hit"), 300);
-      }, 200);
+        setTimeout(() => elemAlvo.classList.remove("anim-hit"), 600);
+      }, 400);
     } else if (tipo === "cura") {
       elemAtacante.classList.add("anim-heal");
-      setTimeout(() => elemAtacante.classList.remove("anim-heal"), 500);
+      setTimeout(() => elemAtacante.classList.remove("anim-heal"), 800);
     }
   }
 
@@ -599,7 +592,7 @@
       }
 
       atualizarTela();
-    }, 300);
+    }, 400);
   }
 
   function atacar() {
@@ -618,13 +611,13 @@
         spriteEnemyElem.classList.add("anim-defeat");
         spriteEnemyElem.innerText = "💫";
         faseAtual++;
-        setTimeout(iniciarCombate, 1400);
+        setTimeout(iniciarCombate, 1600);
         atualizarTela();
         return;
       }
 
       contraAtaqueInimigo();
-    }, 300);
+    }, 400);
   }
 
   function usarHabilidade() {
@@ -663,13 +656,13 @@
         spriteEnemyElem.classList.add("anim-defeat");
         spriteEnemyElem.innerText = "💫";
         faseAtual++;
-        setTimeout(iniciarCombate, 1400);
+        setTimeout(iniciarCombate, 1600);
         atualizarTela();
         return;
       }
 
       contraAtaqueInimigo();
-    }, 300);
+    }, 400);
   }
 
   function usarPocao() {
@@ -718,7 +711,6 @@
   });
 
   // Inicialização
-  salvarProgresso();
   atualizarPlacarHTML();
   log("========================================");
   log("        ⚔️ O SOBREVIVENTE ⚔️");

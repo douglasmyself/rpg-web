@@ -251,7 +251,7 @@
 </head>
 <body>
 
-<div class="version-tag">v1.6</div>
+<div class="version-tag">v1.7</div>
 
 <div class="game-card">
   <div class="title">⚔️ O SOBREVIVENTE ⚔️</div>
@@ -492,7 +492,6 @@
       atualizarPlacarHTML();
       log(`========================================`);
       
-      // FIM DE JOGO (VITÓRIA COMPLETA): Permite colocar novo nome direto
       document.getElementById("actions-container").style.display = "none";
       document.getElementById("setup-container").style.display = "flex";
       document.getElementById("arcade-scoreboard").style.display = "block";
@@ -537,7 +536,6 @@
     if (!valor) return;
     heroi.nome = valor;
 
-    // SELEÇÃO AUTOMÁTICA DO HERÓI MAIS FORTE
     if (nivelConta >= 4) {
       heroi.classe = "Mestre";
       heroi.hp = 150; heroi.hpMax = 150; heroi.ataque = 32;
@@ -605,7 +603,6 @@
         spriteHeroElem.innerText = "😵";
         calcularEAdicionarScore(false);
         
-        // FIM DE JOGO (DERROTA): Reabre o input para o próximo jogador
         document.getElementById("actions-container").style.display = "none";
         document.getElementById("setup-container").style.display = "flex";
         document.getElementById("arcade-scoreboard").style.display = "block";
@@ -672,7 +669,7 @@
       } else {
         danoEspecial = heroi.ataque + 12;
         inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
-        log(`✨ Você usou Impacto Mágico e causou ${danoEspecial} de dano ao `${inimigo.nome}!`);
+        log(`✨ Você usou Impacto Mágico e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
         heroi.cdHabilidade = 2;
       }
 

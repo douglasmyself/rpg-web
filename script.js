@@ -29,6 +29,7 @@ class Inimigo {
   constructor(nome, hp, ataque, experiencia) {
     this.nome = nome;
     this.hp = hp;
+    this.hp_maximo = hp; // Guardado para atualizar a barra gráfica
     this.ataque = ataque;
     this.experiencia = experiencia;
   }
@@ -40,6 +41,7 @@ class Inimigo {
 
 const outputDiv = document.getElementById("output");
 const inputElem = document.getElementById("input");
+const hudPanel = document.getElementById("hudPanel");
 
 let estado = "INICIO";
 let heroi = null;
@@ -61,6 +63,28 @@ const catalogo_inimigos = [
 function imprimir(texto) {
   outputDiv.textContent += texto + "\n";
   outputDiv.scrollTop = outputDiv.scrollHeight;
+  atualizarHUD();
+}
+
+function atualizarHUD() {
+  if (heroi && inimigoAtual && estado === "COMBATE") {
+    hudPanel.style.display = "flex";
+    
+    // Herói
+    document.getElementById("hudHeroName").textContent = `${heroi.nome} (${heroi.classe})`;
+    let heroPct = Math.max(0, (heroi.hp / heroi.hp_maximo) * 100);
+    document.getElementById("hudHeroHpBar").style.width = heroPct + "%";
+    document.getElementById("hudHeroHpText").textContent = `HP: ${heroi.hp}/${heroi.hp_maximo}`;
+    document.getElementById("hudHeroPocoes").textContent = `🧪 Kits: ${heroi.pocoes}`;
+
+    // Inimigo
+    document.getElementById("hudEnemyName").textContent = inimigoAtual.nome;
+    let enemyPct = Math.max(0, (inimigoAtual.hp / inimigoAtual.hp_maximo) * 100);
+    document.getElementById("hudEnemyHpBar").style.width = enemyPct + "%";
+    document.getElementById("hudEnemyHpText").textContent = `HP: ${inimigoAtual.hp}/${inimigoAtual.hp_maximo}`;
+  } else {
+    hudPanel.style.display = "none";
+  }
 }
 
 function randomInt(min, max) {
@@ -78,6 +102,7 @@ function iniciarJogo() {
 function proximaSala() {
   faseAtual++;
   if (faseAtual > totalFases) {
+    hudPanel.style.display = "none";
     imprimir("\n========================================");
     imprimir(`🏆 PARABÉNS🏆 ${heroi.nome}! VOCÊ ZEROU A MASMORRA!`);
     imprimir("========================================");
@@ -164,6 +189,7 @@ function processarEntrada() {
     }
 
     if (!heroi.esta_vivo()) {
+      hudPanel.style.display = "none";
       imprimir("\n💀 Você foi derrotado na masmorra... Game Over!");
       estado = "FIM";
       return;

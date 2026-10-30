@@ -12,7 +12,7 @@
     }
 
     body {
-      background: linear-gradient(135deg, #090d16 0%, #151b2b 100%);
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
       color: #e6edf3;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
@@ -22,86 +22,79 @@
       padding: 15px;
     }
 
-    .game-container {
-      background-color: #1a2234;
-      border: 2px solid #30363d;
+    .game-card {
+      background-color: #1c2128;
+      border: 1px solid #30363d;
       border-radius: 12px;
       width: 100%;
-      max-width: 550px;
-      padding: 20px;
-      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8);
+      max-width: 520px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    .game-header {
-      text-align: center;
-      margin-bottom: 15px;
-    }
-
-    .game-header h1 {
-      font-size: 20px;
+    .title {
       color: #00ff66;
-      letter-spacing: 1px;
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
     }
 
-    /* Painel de Status Estilo Cards */
-    .status-panels {
+    /* Cards de Status (Herói e Inimigo) */
+    .status-container {
       display: flex;
-      gap: 12px;
+      gap: 15px;
       width: 100%;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
 
     .status-card {
       flex: 1;
-      background-color: #0d1117;
-      border: 1px solid #30363d;
+      background-color: #22272e;
+      border: 1px solid #373e47;
       border-radius: 8px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      padding: 14px;
     }
 
     .status-card h3 {
+      font-size: 16px;
+      color: #f08c00;
+      margin-bottom: 10px;
+    }
+
+    .status-info {
       font-size: 14px;
-      color: #f0b429;
-      margin-bottom: 4px;
+      color: #adbac7;
+      margin-bottom: 6px;
     }
 
-    .status-line {
-      font-size: 13px;
-      color: #c9d1d9;
-    }
-
-    /* Consola de Texto */
-    .output {
+    /* Caixa de Log */
+    .log-box {
       width: 100%;
-      height: 220px;
-      overflow-y: auto;
-      background-color: #0d1117;
-      border: 1px solid #30363d;
+      height: 180px;
+      background-color: #2d333b;
+      border: 1px solid #373e47;
       border-radius: 6px;
       padding: 12px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
+      overflow-y: auto;
       font-family: 'Courier New', Courier, monospace;
-      font-size: 12px;
-      line-height: 1.4;
-      color: #7ee787;
-      margin-bottom: 15px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #adbac7;
+      margin-bottom: 20px;
     }
 
-    /* Botões de Ação Diretos */
-    .action-controls {
+    /* Botões de Ação */
+    .actions-container {
       display: flex;
-      gap: 12px;
+      gap: 15px;
       width: 100%;
     }
 
-    .btn-action {
+    .btn {
       flex: 1;
       padding: 12px;
       border: none;
@@ -109,55 +102,55 @@
       font-weight: bold;
       font-size: 14px;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: background-color 0.2s;
     }
 
     .btn-attack {
-      background-color: #238636;
+      background-color: #2ea043;
       color: #ffffff;
     }
 
     .btn-attack:hover {
-      background-color: #2ea043;
+      background-color: #3fb950;
     }
 
     .btn-potion {
       background-color: #f0b429;
-      color: #0d1117;
+      color: #1c2128;
     }
 
     .btn-potion:hover {
       background-color: #d49a1d;
     }
 
-    .btn-action:disabled {
-      background-color: #21262d;
-      color: #484f58;
+    .btn:disabled {
+      background-color: #373e47;
+      color: #768390;
       cursor: not-allowed;
     }
 
-    /* Campo de Texto para Nome / Classe Inicial */
-    .input-group {
+    /* Tela Inicial de Criação */
+    .setup-container {
       display: flex;
       gap: 10px;
       width: 100%;
     }
 
-    .input-group input {
+    .setup-container input {
       flex: 1;
-      background-color: #0d1117;
-      border: 1px solid #30363d;
+      background-color: #22272e;
+      border: 1px solid #373e47;
       border-radius: 6px;
       color: #ffffff;
       padding: 10px;
       font-size: 14px;
     }
 
-    .input-group button {
-      background-color: #238636;
+    .setup-container button {
+      background-color: #2ea043;
       color: white;
       border: none;
-      padding: 0 20px;
+      padding: 0 18px;
       border-radius: 6px;
       font-weight: bold;
       cursor: pointer;
@@ -166,239 +159,209 @@
 </head>
 <body>
 
-<div class="game-container">
-  <div class="game-header">
-    <h1>⚔️ O SOBREVIVENTE ⚔️</h1>
-  </div>
+<div class="game-card">
+  <!-- RPG Dungeon Quest - Douglas Gomes -->
+  <div class="title">⚔️ O SOBREVIVENTE ⚔️</div>
 
-  <!-- Cards de Status do Herói e Inimigo -->
-  <div class="status-panels" id="statusPanels" style="display: none;">
+  <!-- Cards de Status -->
+  <div class="status-container" id="status-container" style="display: none;">
     <div class="status-card">
-      <h3 id="cardHeroTitle">Herói</h3>
-      <div class="status-line" id="cardHeroClass">Classe: -</div>
-      <div class="status-line" id="cardHeroHp">Vida: 0/0</div>
-      <div class="status-line" id="cardHeroPotion">Kit Médico: 0</div>
+      <h3 id="hero-name-display">Herói</h3>
+      <div class="status-info" id="hero-class-display">Guerreiro</div>
+      <div class="status-info">Vida: <span id="hero-hp">140</span>/<span id="hero-hp-max">140</span></div>
+      <div class="status-info">Kit Médico: <span id="hero-pots">2</span></div>
     </div>
     <div class="status-card">
-      <h3 id="cardEnemyTitle">Inimigo</h3>
-      <div class="status-line" id="cardEnemyHp">Vida: 0</div>
+      <h3 id="enemy-name">Inimigo</h3>
+      <div class="status-info">Vida: <span id="enemy-hp">50</span></div>
     </div>
   </div>
 
-  <!-- Ecrã de Registo -->
-  <div id="output" class="output"></div>
+  <!-- Caixa de Log das Mensagens -->
+  <div class="log-box" id="log-box"></div>
 
   <!-- Botões de Ação na Batalha -->
-  <div class="action-controls" id="battleControls" style="display: none;">
-    <button class="btn-action btn-attack" onclick="acaoAtacar()">Atacar</button>
-    <button class="btn-action btn-potion" onclick="acaoPocao()">Usar Kit Médico</button>
+  <div class="actions-container" id="actions-container" style="display: none;">
+    <button class="btn btn-attack" id="btn-attack" onclick="atacar()">Atacar</button>
+    <button class="btn btn-potion" id="btn-potion" onclick="usarPocao()">Usar Kit Médico</button>
   </div>
 
-  <!-- Caixa de Input para o Nome / Escolhas numéricas -->
-  <div class="input-group" id="inputGroup">
-    <input type="text" id="input" placeholder="Digite aqui..." autofocus>
-    <button onclick="processarEntrada()">Enviar</button>
+  <!-- Input Inicial (Nome / Opções) -->
+  <div class="setup-container" id="setup-container">
+    <input type="text" id="setup-input" placeholder="Digite seu nome..." autofocus>
+    <button onclick="processarSetup()">Enviar</button>
   </div>
 </div>
 
 <script>
-  class Personagem {
-    constructor(nome, classe, hp, ataque, pocoes) {
-      this.nome = nome;
-      this.classe = classe;
-      this.hp = hp;
-      this.hp_maximo = hp;
-      this.ataque = ataque;
-      this.pocoes = pocoes;
-    }
-    esta_vivo() { return this.hp > 0; }
-    usar_pocao() {
-      if (this.pocoes > 0) {
-        let cura = 65;
-        this.hp = Math.min(this.hp_maximo, this.hp + cura);
-        this.pocoes -= 1;
-        imprimir(`\n🧪 ${this.nome} usou um Kit Médico e recuperou ${cura} de Vida!`);
-        imprimir(`Kit Médico restantes: ${this.pocoes}`);
-      } else {
-        imprimir("\n❌ Você não tem mais nenhum Kit Médico!");
-      }
-    }
-  }
+  let heroi = {
+    nome: "Herói",
+    classe: "Guerreiro",
+    hp: 140,
+    hpMax: 140,
+    ataque: 18,
+    pocoes: 2
+  };
 
-  class Inimigo {
-    constructor(nome, hp, ataque, experiencia) {
-      this.nome = nome;
-      this.hp = hp;
-      this.ataque = ataque;
-      this.experiencia = experiencia;
-    }
-    esta_vivo() { return this.hp > 0; }
-  }
+  let inimigo = {
+    nome: "Ladrão",
+    hp: 50,
+    ataque: 12
+  };
 
-  const outputDiv = document.getElementById("output");
-  const inputElem = document.getElementById("input");
-  const inputGroup = document.getElementById("inputGroup");
-  const battleControls = document.getElementById("battleControls");
-  const statusPanels = document.getElementById("statusPanels");
-
-  let estado = "AGUARDANDO_NOME";
-  let heroi = null;
-  let nomeHeroi = "";
-  let faseAtual = 0;
-  const totalFases = 3;
-  let inimigoAtual = null;
-
-  const catalogo_inimigos = [
-    { nome: "Ladrão", hp: 50, ataque: 12, exp: 20 },
-    { nome: "Trapaceiro", hp: 80, ataque: 18, exp: 40 },
-    { nome: "Goblin Espectral", hp: 60, ataque: 15, exp: 30 },
-    { nome: "Orc Guerreiro", hp: 90, ataque: 22, exp: 60 },
-    { nome: "Esqueleto Guerreiro", hp: 70, ataque: 16, exp: 35 },
-    { nome: "Assassino das Sombras", hp: 85, ataque: 20, exp: 50 },
-    { nome: "Dragão das Sombras (Chefe)", hp: 110, ataque: 28, exp: 100 }
+  const inimigosDungeon = [
+    { nome: "Ladrão", hp: 50, ataque: 12 },
+    { nome: "Trapaceiro", hp: 80, ataque: 18 },
+    { nome: "Dragão das Sombras (Chefe)", hp: 100, ataque: 28 }
   ];
 
-  function imprimir(texto) {
-    outputDiv.textContent += texto + "\n";
-    outputDiv.scrollTop = outputDiv.scrollHeight;
-    atualizarPaineis();
+  let faseAtual = 0;
+  let estado = "NOME";
+
+  function log(mensagem) {
+    const logBox = document.getElementById("log-box");
+    logBox.innerHTML += (logBox.innerHTML ? "<br>" : "") + mensagem;
+    logBox.scrollTop = logBox.scrollHeight;
   }
 
-  function atualizarPaineis() {
-    if (heroi && inimigoAtual && estado === "COMBATE") {
-      statusPanels.style.display = "flex";
-      battleControls.style.display = "flex";
-      inputGroup.style.display = "none";
-
-      document.getElementById("cardHeroTitle").textContent = heroi.nome;
-      document.getElementById("cardHeroClass").textContent = `Classe: ${heroi.classe}`;
-      document.getElementById("cardHeroHp").textContent = `Vida: ${heroi.hp}/${heroi.hp_maximo}`;
-      document.getElementById("cardHeroPotion").textContent = `Kit Médico: ${heroi.pocoes}`;
-
-      document.getElementById("cardEnemyTitle").textContent = inimigoAtual.nome;
-      document.getElementById("cardEnemyHp").textContent = `Vida: ${inimigoAtual.hp}`;
-    } else {
-      statusPanels.style.display = "none";
-      battleControls.style.display = "none";
-      inputGroup.style.display = "flex";
-    }
+  function atualizarTela() {
+    document.getElementById("hero-name-display").innerText = heroi.nome;
+    document.getElementById("hero-class-display").innerText = heroi.classe;
+    document.getElementById("hero-hp").innerText = heroi.hp;
+    document.getElementById("hero-hp-max").innerText = heroi.hpMax;
+    document.getElementById("hero-pots").innerText = heroi.pocoes;
+    document.getElementById("enemy-name").innerText = inimigo.nome;
+    document.getElementById("enemy-hp").innerText = inimigo.hp;
   }
 
-  function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  function iniciarJogo() {
-    imprimir("========================================");
-    imprimir("        ⚔️ O SOBREVIVENTE ⚔️");
-    imprimir("========================================");
-    imprimir("Digite o nome do seu herói: ");
-  }
-
-  function proximaSala() {
-    faseAtual++;
-    if (faseAtual > totalFases) {
-      statusPanels.style.display = "none";
-      battleControls.style.display = "none";
-      imprimir("\n========================================");
-      imprimir(`🏆 PARABÉNS🏆 ${heroi.nome}! VOCÊ ZEROU A MASMORRA!`);
-      imprimir("========================================");
-      estado = "FIM";
+  function iniciarCombate() {
+    if (faseAtual >= inimigosDungeon.length) {
+      log(`<br>========================================`);
+      log(`🏆 PARABÉNS! ${heroi.nome}, VOCÊ ZEROU A MASMORRA!`);
+      log(`========================================`);
+      document.getElementById("actions-container").style.display = "none";
       return;
     }
 
-    imprimir(`\n----------------------------------------`);
-    imprimir(`🚪 Entrando na Sala ${faseAtual}...`);
+    let dadosInimigo = inimigosDungeon[faseAtual];
+    inimigo.nome = dadosInimigo.nome;
+    inimigo.hp = dadosInimigo.hp;
+    inimigo.ataque = dadosInimigo.ataque;
+
+    log(`<br>----------------------------------------`);
+    log(`🚪 Entrando na Sala ${faseAtual + 1}...`);
+    log(`⚠️ Um ${inimigo.nome} selvagem apareceu para o combate!`);
+
+    document.getElementById("setup-container").style.display = "none";
+    document.getElementById("status-container").style.display = "flex";
+    document.getElementById("actions-container").style.display = "flex";
     
-    let dadosAleatorios = catalogo_inimigos[Math.floor(Math.random() * catalogo_inimigos.length)];
-    inimigoAtual = new Inimigo(dadosAleatorios.nome, dadosAleatorios.hp, dadosAleatorios.ataque, dadosAleatorios.exp);
-    
-    imprimir(`⚠️ Um ${inimigoAtual.nome} selvagem apareceu para o combate!`);
-    estado = "COMBATE";
-    atualizarPaineis();
+    document.getElementById("btn-attack").disabled = false;
+    document.getElementById("btn-potion").disabled = false;
+
+    atualizarTela();
   }
 
-  function processarEntrada() {
-    let valor = inputElem.value.trim();
-    inputElem.value = "";
-    if (estado === "FIM") return;
+  function processarSetup() {
+    const input = document.getElementById("setup-input");
+    let valor = input.value.trim();
+    input.value = "";
 
-    if (estado === "AGUARDANDO_NOME") {
+    if (estado === "NOME") {
       if (!valor) return;
-      nomeHeroi = valor;
-      imprimir(valor);
-      imprimir("\nEscolha a sua Classe:");
-      imprimir("1. Guerreiro (Mais Vida, ataque equilibrado)");
-      imprimir("2. Mago (Ataque mais forte, menos Vida)");
-      imprimir("Opção (1 ou 2): ");
-      estado = "AGUARDANDO_CLASSE";
-    } 
-    else if (estado === "AGUARDANDO_CLASSE") {
-      imprimir(valor);
+      heroi.nome = valor;
+      log(`Digite o nome do seu herói: ${heroi.nome}`);
+      log(`<br>Escolha a sua Classe:`);
+      log(`1. Guerreiro (Mais Vida, ataque equilibrado)`);
+      log(`2. Mago (Ataque mais forte, menos Vida)`);
+      input.placeholder = "Opção (1 ou 2)...";
+      estado = "CLASSE";
+    } else if (estado === "CLASSE") {
       if (valor === "2") {
-        heroi = new Personagem(nomeHeroi, "Mago", 100, 25, 3);
+        heroi.classe = "Mago";
+        heroi.hp = 100;
+        heroi.hpMax = 100;
+        heroi.ataque = 25;
+        heroi.pocoes = 3;
       } else {
-        heroi = new Personagem(nomeHeroi, "Guerreiro", 140, 18, 2);
+        heroi.classe = "Guerreiro";
+        heroi.hp = 140;
+        heroi.hpMax = 140;
+        heroi.ataque = 18;
+        heroi.pocoes = 2;
       }
-      imprimir(`\n✨ ${heroi.nome} o Seu ${heroi.classe} entrou na Masmorra com ${heroi.hp} de Vida e ${heroi.pocoes} Kits Médico!`);
-      faseAtual = 0;
-      proximaSala();
+      log(`✨ ${heroi.nome} o Seu ${heroi.classe} entrou na Masmorra!`);
+      iniciarCombate();
     }
   }
 
-  function acaoAtacar() {
-    if (estado !== "COMBATE") return;
-    let dano_causado = randomInt(heroi.ataque - 5, heroi.ataque + 5);
-    inimigoAtual.hp -= dano_causado;
-    imprimir(`\n🗡️ Você atacou o ${inimigoAtual.nome} e causou ${dano_causado} de dano!`);
+  function atacar() {
+    if (heroi.hp <= 0 || inimigo.hp <= 0) return;
 
-    if (inimigoAtual.esta_vivo()) {
-      let dano_recebido = randomInt(inimigoAtual.ataque - 3, inimigoAtual.ataque + 3);
-      heroi.hp -= dano_recebido;
-      imprimir(`💥 O ${inimigoAtual.nome} revidou e te causou ${dano_recebido} de dano!`);
+    // Dano do herói
+    let danoHeroi = Math.floor(Math.random() * 6) + (heroi.ataque - 3);
+    inimigo.hp = Math.max(0, inimigo.hp - danoHeroi);
+    log(`🗡️ Causaste ${danoHeroi} de dano ao ${inimigo.nome}!`);
+
+    if (inimigo.hp === 0) {
+      log(`🏆 Derrotaste o ${inimigo.nome} com sucesso!`);
+      faseAtual++;
+      setTimeout(iniciarCombate, 1200);
+      atualizarTela();
+      return;
+    }
+
+    // Contra-ataque do inimigo
+    let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
+    heroi.hp = Math.max(0, heroi.hp - danoInimigo);
+    log(`💥 O ${inimigo.nome} contra-atacou e tirou ${danoInimigo} de HP!`);
+
+    if (heroi.hp === 0) {
+      log(`💀 Foste derrotado na masmorra... Fim de jogo.`);
+      document.getElementById("btn-attack").disabled = true;
+      document.getElementById("btn-potion").disabled = true;
+    }
+
+    atualizarTela();
+  }
+
+  function usarPocao() {
+    if (heroi.hp <= 0 || inimigo.hp <= 0) return;
+
+    if (heroi.pocoes > 0) {
+      let cura = 65;
+      heroi.hp = Math.min(heroi.hpMax, heroi.hp + cura);
+      heroi.pocoes--;
+      log(`🧪 Usaste um Kit Médico e recuperaste ${cura} de HP!`);
     } else {
-      imprimir(`\n🏆 Vitória!🏆 Você derrotou o ${inimigoAtual.nome}!`);
-      imprimir(`🎉 Sala ${faseAtual} superada com sucesso!`);
-      proximaSala();
+      log(`❌ Não tens mais Kit Médico!`);
       return;
     }
 
-    if (!heroi.esta_vivo()) {
-      statusPanels.style.display = "none";
-      battleControls.style.display = "none";
-      imprimir("\n💀 Você foi derrotado na masmorra... Game Over!");
-      estado = "FIM";
-      return;
+    // Inimigo ataca enquanto usa a poção
+    let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
+    heroi.hp = Math.max(0, heroi.hp - danoInimigo);
+    log(`💥 Enquanto bebias a poção, o ${inimigo.nome} atacou e tirou ${danoInimigo} de HP!`);
+
+    if (heroi.hp === 0) {
+      log(`💀 Foste derrotado na masmorra... Fim de jogo.`);
+      document.getElementById("btn-attack").disabled = true;
+      document.getElementById("btn-potion").disabled = true;
     }
-    atualizarPaineis();
+
+    atualizarTela();
   }
 
-  function acaoPocao() {
-    if (estado !== "COMBATE") return;
-    heroi.usar_pocao();
-    if (inimigoAtual.esta_vivo()) {
-      let dano_recebido = randomInt(inimigoAtual.ataque - 3, inimigoAtual.ataque + 3);
-      heroi.hp -= dano_recebido;
-      imprimir(`💥 Enquanto você usava o Kit Médico, o ${inimigoAtual.nome} atacou e causou ${dano_recebido} de dano!`);
-    }
-
-    if (!heroi.esta_vivo()) {
-      statusPanels.style.display = "none";
-      battleControls.style.display = "none";
-      imprimir("\n💀 Você foi derrotado na masmorra... Game Over!");
-      estado = "FIM";
-      return;
-    }
-    atualizarPaineis();
-  }
-
-  inputElem.addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-      processarEntrada();
-    }
+  // Tecla Enter no input de nome
+  document.getElementById("setup-input").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") processarSetup();
   });
 
-  iniciarJogo();
+  // Início
+  log("========================================");
+  log("        ⚔️ O SOBREVIVENTE ⚔️");
+  log("========================================");
+  log("Digite o nome do seu herói:");
 </script>
 
 </body>

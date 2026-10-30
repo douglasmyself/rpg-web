@@ -19,182 +19,164 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      padding: 15px;
+      padding: 10px;
     }
 
     .game-card {
       background-color: #1c2128;
       border: 1px solid #30363d;
-      border-radius: 12px;
+      border-radius: 10px;
       width: 100%;
-      max-width: 520px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      max-width: 480px;
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
       display: flex;
       flex-direction: column;
       align-items: center;
-      overflow: hidden;
     }
 
     .title {
       color: #00ff66;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: bold;
-      margin-bottom: 5px;
+      margin-bottom: 2px;
       text-align: center;
     }
 
     .account-level {
       color: #f0b429;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: bold;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
 
-    /* ARENA VISUAL DE ANIMAÇÃO DO COMBATE */
+    /* ARENA VISUAL MAIS COMPACTA */
     .battle-arena {
       width: 100%;
-      height: 130px;
+      height: 100px;
       background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
       border: 1px solid #30363d;
-      border-radius: 8px;
-      margin-bottom: 15px;
+      border-radius: 6px;
+      margin-bottom: 10px;
       display: flex;
       justify-content: space-around;
       align-items: flex-end;
-      padding: 15px;
+      padding: 10px;
       position: relative;
       overflow: hidden;
     }
 
     .character-sprite {
-      font-size: 50px;
+      font-size: 40px;
       transition: transform 0.4s ease, opacity 0.5s ease;
       position: relative;
       user-select: none;
-      filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));
+      filter: drop-shadow(0px 3px 5px rgba(0,0,0,0.5));
     }
 
-    /* Efeitos e Animações CSS mais lentas e suaves */
-    .anim-attack-hero {
-      animation: attackHero 0.8s ease-in-out;
-    }
-
-    .anim-attack-enemy {
-      animation: attackEnemy 0.8s ease-in-out;
-    }
-
-    .anim-hit {
-      animation: takeHit 0.6s ease-in-out;
-    }
-
-    .anim-heal {
-      animation: healEffect 0.8s ease-in-out;
-    }
-
-    .anim-defeat {
-      transform: rotate(90deg) translateY(20px) !important;
-      opacity: 0.6;
-    }
+    /* Animações suaves */
+    .anim-attack-hero { animation: attackHero 0.8s ease-in-out; }
+    .anim-attack-enemy { animation: attackEnemy 0.8s ease-in-out; }
+    .anim-hit { animation: takeHit 0.6s ease-in-out; }
+    .anim-heal { animation: healEffect 0.8s ease-in-out; }
+    .anim-defeat { transform: rotate(90deg) translateY(15px) !important; opacity: 0.6; }
 
     @keyframes attackHero {
       0% { transform: translateX(0); }
-      50% { transform: translateX(70px) scale(1.2); }
+      50% { transform: translateX(50px) scale(1.15); }
       100% { transform: translateX(0); }
     }
 
     @keyframes attackEnemy {
       0% { transform: translateX(0); }
-      50% { transform: translateX(-70px) scale(1.2); }
+      50% { transform: translateX(-50px) scale(1.15); }
       100% { transform: translateX(0); }
     }
 
     @keyframes takeHit {
-      0% { filter: drop-shadow(0 0 15px red); transform: scale(0.85); }
-      25% { transform: translateX(-10px); }
-      50% { transform: translateX(10px); }
-      75% { transform: translateX(-5px); }
+      0% { filter: drop-shadow(0 0 12px red); transform: scale(0.85); }
+      50% { transform: translateX(8px); }
       100% { filter: none; transform: scale(1); }
     }
 
     @keyframes healEffect {
-      0% { filter: drop-shadow(0 0 15px #00ff66); transform: scale(1); }
-      50% { transform: scale(1.25) translateY(-12px); }
+      0% { filter: drop-shadow(0 0 12px #00ff66); transform: scale(1); }
+      50% { transform: scale(1.2) translateY(-10px); }
       100% { filter: none; transform: scale(1); }
     }
 
-    /* Cards de Status (Herói e Inimigo) */
+    /* Cards de Status Compactos */
     .status-container {
       display: flex;
-      gap: 15px;
+      gap: 10px;
       width: 100%;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
 
     .status-card {
       flex: 1;
       background-color: #22272e;
       border: 1px solid #373e47;
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 10px;
     }
 
     .status-card h3 {
-      font-size: 15px;
+      font-size: 14px;
       color: #f08c00;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .status-info {
-      font-size: 13px;
+      font-size: 12px;
       color: #adbac7;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
 
-    /* Caixa de Log */
+    /* Caixa de Log Reduzida para caber na tela */
     .log-box {
       width: 100%;
-      height: 140px;
+      height: 110px;
       background-color: #2d333b;
       border: 1px solid #373e47;
       border-radius: 6px;
-      padding: 12px;
+      padding: 8px;
       overflow-y: auto;
       font-family: 'Courier New', Courier, monospace;
-      font-size: 13px;
-      line-height: 1.5;
+      font-size: 12px;
+      line-height: 1.4;
       color: #adbac7;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
 
-    /* Placar estilo Fliperama */
+    /* Placar estilo Fliperama Compacto */
     .scoreboard {
       width: 100%;
       background-color: #161b22;
       border: 1px solid #30363d;
       border-radius: 6px;
-      padding: 10px;
-      margin-bottom: 15px;
-      font-size: 12px;
+      padding: 8px;
+      margin-bottom: 10px;
+      font-size: 11px;
     }
 
     .scoreboard h4 {
       color: #00ff66;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
       text-align: center;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .score-list {
       list-style: none;
-      max-height: 70px;
+      max-height: 50px;
       overflow-y: auto;
     }
 
     .score-list li {
       display: flex;
       justify-content: space-between;
-      padding: 2px 5px;
+      padding: 2px 4px;
       border-bottom: 1px dashed #30363d;
       color: #c9d1d9;
     }
@@ -202,61 +184,39 @@
     /* Botões de Ação */
     .actions-container {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       width: 100%;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
+      margin-bottom: 8px;
     }
 
     .btn {
       flex: 1;
-      padding: 12px;
+      padding: 10px;
       border: none;
       border-radius: 6px;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
       transition: background-color 0.2s;
-      min-width: 120px;
     }
 
-    .btn-attack {
-      background-color: #2ea043;
-      color: #ffffff;
-    }
+    .btn-attack { background-color: #2ea043; color: #ffffff; }
+    .btn-attack:hover { background-color: #3fb950; }
 
-    .btn-attack:hover {
-      background-color: #3fb950;
-    }
+    .btn-skill { background-color: #a371f7; color: #ffffff; }
+    .btn-skill:hover { background-color: #8a42f5; }
 
-    .btn-skill {
-      background-color: #a371f7;
-      color: #ffffff;
-    }
-
-    .btn-skill:hover {
-      background-color: #8a42f5;
-    }
-
-    .btn-potion {
-      background-color: #f0b429;
-      color: #1c2128;
-    }
-
-    .btn-potion:hover {
-      background-color: #d49a1d;
-    }
+    .btn-potion { background-color: #f0b429; color: #1c2128; }
+    .btn-potion:hover { background-color: #d49a1d; }
 
     .btn-restart {
       background-color: #f85149;
       color: #ffffff;
       width: 100%;
-      margin-top: 5px;
+      padding: 10px;
+      font-size: 13px;
     }
-
-    .btn-restart:hover {
-      background-color: #da3633;
-    }
+    .btn-restart:hover { background-color: #da3633; }
 
     .btn:disabled {
       background-color: #373e47;
@@ -267,7 +227,7 @@
     /* Tela Inicial de Criação */
     .setup-container {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       width: 100%;
     }
 
@@ -277,15 +237,15 @@
       border: 1px solid #373e47;
       border-radius: 6px;
       color: #ffffff;
-      padding: 10px;
-      font-size: 14px;
+      padding: 8px;
+      font-size: 13px;
     }
 
     .setup-container button {
       background-color: #2ea043;
       color: white;
       border: none;
-      padding: 0 18px;
+      padding: 0 15px;
       border-radius: 6px;
       font-weight: bold;
       cursor: pointer;
@@ -295,17 +255,14 @@
 <body>
 
 <div class="game-card">
-  <!-- RPG Dungeon Quest - Douglas Gomes de Almeida -->
   <div class="title">⚔️ O SOBREVIVENTE ⚔️</div>
   <div class="account-level" id="account-level">Nível de Conta: 1</div>
 
-  <!-- ARENA ANIMADA DE BONEQUINHOS -->
   <div class="battle-arena" id="battle-arena" style="display: none;">
     <div class="character-sprite" id="sprite-hero">🛡️</div>
     <div class="character-sprite" id="sprite-enemy">🥷</div>
   </div>
 
-  <!-- Cards de Status -->
   <div class="status-container" id="status-container" style="display: none;">
     <div class="status-card">
       <h3 id="hero-name-display">Herói</h3>
@@ -319,7 +276,6 @@
     </div>
   </div>
 
-  <!-- Placar de Recordes (Arcade) -->
   <div class="scoreboard" id="arcade-scoreboard">
     <h4>🕹️ Hall da Fama (Ranking de Score)</h4>
     <ul class="score-list" id="score-list">
@@ -327,28 +283,23 @@
     </ul>
   </div>
 
-  <!-- Caixa de Log das Mensagens -->
   <div class="log-box" id="log-box"></div>
 
-  <!-- Botões de Ação na Batalha -->
   <div class="actions-container" id="actions-container" style="display: none;">
     <button class="btn btn-attack" id="btn-attack" onclick="atacar()">Atacar</button>
     <button class="btn btn-skill" id="btn-skill" onclick="usarHabilidade()">Habilidade</button>
     <button class="btn btn-potion" id="btn-potion" onclick="usarPocao()">Usar Kit Médico</button>
   </div>
 
-  <!-- Botão de Reiniciar -->
   <button class="btn btn-restart" id="btn-restart" style="display: none;" onclick="reiniciarJogo()">Próximo Jogador</button>
 
-  <!-- Input Inicial (Nome / Opções) -->
   <div class="setup-container" id="setup-container">
-    <input type="text" id="setup-input" placeholder="Digite seu nome (ex: Douglas ou Amigo)..." autofocus>
+    <input type="text" id="setup-input" placeholder="Digite seu nome..." autofocus>
     <button onclick="processarSetup()">Enviar</button>
   </div>
 </div>
 
 <script>
-  // Variáveis em memória (sem localStorage, resetam ao atualizar a página)
   let nivelConta = 1;
   let rankingScores = [];
 
@@ -460,6 +411,7 @@
 
       atualizarPlacarHTML();
       log(`========================================`);
+      // Oculta botões de ataque e mostra APENAS o de próximo jogador ao zerar o jogo
       document.getElementById("actions-container").style.display = "none";
       document.getElementById("btn-restart").style.display = "block";
       document.getElementById("arcade-scoreboard").style.display = "block";
@@ -584,9 +536,8 @@
         spriteHeroElem.classList.add("anim-defeat");
         spriteHeroElem.innerText = "😵";
         calcularEAdicionarScore(false);
-        document.getElementById("btn-attack").disabled = true;
-        document.getElementById("btn-potion").disabled = true;
-        document.getElementById("btn-skill").disabled = true;
+        // Oculta botões de batalha e mostra o botão de próximo jogador ao perder
+        document.getElementById("actions-container").style.display = "none";
         document.getElementById("btn-restart").style.display = "block";
         document.getElementById("arcade-scoreboard").style.display = "block";
       }
@@ -611,6 +562,7 @@
         spriteEnemyElem.classList.add("anim-defeat");
         spriteEnemyElem.innerText = "💫";
         faseAtual++;
+        // Avança de sala automaticamente sem exibir o botão de próximo jogador
         setTimeout(iniciarCombate, 1600);
         atualizarTela();
         return;
@@ -656,6 +608,7 @@
         spriteEnemyElem.classList.add("anim-defeat");
         spriteEnemyElem.innerText = "💫";
         faseAtual++;
+        // Avança de sala automaticamente
         setTimeout(iniciarCombate, 1600);
         atualizarTela();
         return;

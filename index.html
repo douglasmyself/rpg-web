@@ -288,7 +288,7 @@
   <div class="actions-container" id="actions-container" style="display: none;">
     <button class="btn btn-attack" id="btn-attack" onclick="atacar()">Atacar</button>
     <button class="btn btn-skill" id="btn-skill" onclick="usarHabilidade()">Habilidade</button>
-    <button class="btn btn-potion" id="btn-potion" onclick="usarPocao()">Usar Kit Médico</button>
+    <button class="btn btn-potion" id="btn-potion" onclick="usarPocao()">Kit Médico</button>
   </div>
 
   <button class="btn btn-restart" id="btn-restart" style="display: none;" onclick="reiniciarJogo()">Próximo Jogador</button>
@@ -405,7 +405,6 @@
   ];
 
   let faseAtual = 0;
-  let estado = "NOME";
 
   const spriteHeroElem = document.getElementById("sprite-hero");
   const spriteEnemyElem = document.getElementById("sprite-enemy");
@@ -431,11 +430,9 @@
     
     let scoreFinal = Math.max(10, bonusVitoria + pontosVida - penalidadeAcoes);
     
-    // Verifica se já existe um registro com o mesmo nome (ignorando maiúsculas/minúsculas)
     let indexExistente = rankingScores.findIndex(item => item.nome.toLowerCase() === heroi.nome.toLowerCase());
     
     if (indexExistente !== -1) {
-      // Se já existe, substitui pelo novo score (ou mantém o maior, aqui substituímos pelo mais recente conforme pedido)
       rankingScores[indexExistente] = {
         nome: heroi.nome,
         classe: heroi.classe,
@@ -487,13 +484,11 @@
       tocarSom('vitoria');
       calcularEAdicionarScore(true);
 
-      if (nivelConta < 3) {
+      // Sobe de nível automaticamente com base no progresso da conta
+      if (nivelConta < 4) {
         nivelConta++;
-        let novoPersonagem = nivelConta === 2 ? "Soldado" : "Elite";
-        log(`🎉 **NÍVEL DE CONTA SUBIU PARA ${nivelConta}! Desbloqueado: ${novoPersonagem.toUpperCase()}**`);
-      } else if (nivelConta === 3) {
-        nivelConta = 4;
-        log(`👑 **NÍVEL MÁXIMO ATINGIDO! Desbloqueado: MESTRE!**`);
+        let personagensNomes = ["", "Guerreiro", "Soldado", "Elite", "Mestre"];
+        log(`🎉 **NÍVEL DE CONTA SUBIU PARA ${nivelConta}! Desbloqueado automaticamente: ${personagensNomes[nivelConta].toUpperCase()}**`);
       }
 
       atualizarPlacarHTML();
@@ -538,56 +533,39 @@
     let valor = input.value.trim();
     input.value = "";
 
-    if (estado === "NOME") {
-      if (!valor) return;
-      heroi.nome = valor;
-      log(`Jogador: ${heroi.nome}`);
-      log(`<br>Escolha a sua Classe:`);
-      log(`1. Guerreiro (Vida alta, Habilidade: Golpe de Escudo)`);
-      log(`2. Mago (Dano alto, Habilidade: Impacto Mágico)`);
-      
-      if (nivelConta >= 2) log(`3. 🔓 Soldado (Equilibrado, Habilidade: Golpe de Escudo)`);
-      if (nivelConta >= 3) log(`4. 🔓 Elite (Dano muito alto, Habilidade: Espada de Ouro)`);
-      if (nivelConta >= 4) log(`5. 👑 Mestre (Classe Suprema, Habilidade: Bola de Fogo)`);
+    if (!valor) return;
+    heroi.nome = valor;
 
-      input.placeholder = "Opção de classe...";
-      estado = "CLASSE";
-    } else if (estado === "CLASSE") {
-      if (valor === "2") {
-        heroi.classe = "Mago";
-        heroi.hp = 100; heroi.hpMax = 100; heroi.ataque = 22;
-        heroi.habilidade = "Impacto Mágico";
-        heroi.sprite = "🧙‍♂️";
-      } else if (valor === "3" && nivelConta >= 2) {
-        heroi.classe = "Soldado";
-        heroi.hp = 120; heroi.hpMax = 120; heroi.ataque = 20;
-        heroi.habilidade = "Golpe de Escudo";
-        heroi.sprite = "🪖";
-      } else if (valor === "4" && nivelConta >= 3) {
-        heroi.classe = "Elite";
-        heroi.hp = 130; heroi.hpMax = 130; heroi.ataque = 26;
-        heroi.habilidade = "Espada de Ouro";
-        heroi.sprite = "🥷✨";
-      } else if (valor === "5" && nivelConta >= 4) {
-        heroi.classe = "Mestre";
-        heroi.hp = 150; heroi.hpMax = 150; heroi.ataque = 32;
-        heroi.habilidade = "Bola de Fogo";
-        heroi.sprite = "🧙‍♂️🔥";
-      } else {
-        heroi.classe = "Guerreiro";
-        heroi.hp = 140; heroi.hpMax = 140; heroi.ataque = 18;
-        heroi.habilidade = "Golpe de Escudo";
-        heroi.sprite = "🛡️";
-      }
-
-      heroi.pocoes = 3;
-      heroi.cdHabilidade = 0;
-      heroi.golpesGastos = 0;
-      heroi.habilidadesGastas = 0;
-
-      log(`✨ ${heroi.nome}, o seu ${heroi.classe} entrou na Masmorra!`);
-      iniciarCombate();
+    // SELEÇÃO AUTOMÁTICA DO HERÓI MAIS FORTE COM BASE NO NÍVEL DA CONTA
+    if (nivelConta >= 4) {
+      heroi.classe = "Mestre";
+      heroi.hp = 150; heroi.hpMax = 150; heroi.ataque = 32;
+      heroi.habilidade = "Bola de Fogo";
+      heroi.sprite = "🧙‍♂️🔥";
+    } else if (nivelConta === 3) {
+      heroi.classe = "Elite";
+      heroi.hp = 130; heroi.hpMax = 130; heroi.ataque = 26;
+      heroi.habilidade = "Espada de Ouro";
+      heroi.sprite = "🥷✨";
+    } else if (nivelConta === 2) {
+      heroi.classe = "Soldado";
+      heroi.hp = 120; heroi.hpMax = 120; heroi.ataque = 20;
+      heroi.habilidade = "Golpe de Escudo";
+      heroi.sprite = "🪖";
+    } else {
+      heroi.classe = "Guerreiro";
+      heroi.hp = 140; heroi.hpMax = 140; heroi.ataque = 18;
+      heroi.habilidade = "Golpe de Escudo";
+      heroi.sprite = "🛡️";
     }
+
+    heroi.pocoes = 3;
+    heroi.cdHabilidade = 0;
+    heroi.golpesGastos = 0;
+    heroi.habilidadesGastas = 0;
+
+    log(`✨ ${heroi.nome} entrou na Masmorra como **${heroi.classe}** (Nível Máximo Disponível)!`);
+    iniciarCombate();
   }
 
   function animarAcao(atacante, alvo, tipo = "ataque") {
@@ -727,7 +705,6 @@
 
   function reiniciarJogo() {
     faseAtual = 0;
-    estado = "NOME";
     
     document.getElementById("log-box").innerHTML = "";
     document.getElementById("status-container").style.display = "none";

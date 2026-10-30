@@ -303,7 +303,6 @@
   let nivelConta = 1;
   let rankingScores = [];
 
-  // Gerador de Som Estilo Arcade (Web Audio API)
   let audioCtx = null;
 
   function initAudio() {
@@ -335,7 +334,6 @@
       } else if (tipo === 'habilidade') {
         osc.type = 'square';
         osc.frequency.setValueAtTime(300, now);
-        osc.frequency.exponentialRampDown = true;
         osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
         gain.gain.setValueAtTime(0.15, now);
         gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
@@ -349,6 +347,16 @@
         gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
         osc.start(now);
         osc.stop(now + 0.3);
+      } else if (tipo === 'inimigo_derrotado') {
+        // Som alegre de vitória parcial (quando o inimigo perde)
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.setValueAtTime(450, now + 0.1);
+        osc.frequency.setValueAtTime(600, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
       } else if (tipo === 'vitoria') {
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(260, now);
@@ -368,7 +376,7 @@
         osc.stop(now + 0.4);
       }
     } catch(e) {
-      // Ignora restrições de autoplay do navegador se houver
+      // Ignora restrições de autoplay
     }
   }
 
@@ -630,6 +638,7 @@
 
       if (inimigo.hp === 0) {
         log(`🏆 Você derrotou o ${inimigo.nome} com sucesso!`);
+        tocarSom('inimigo_derrotado'); // Toca o som quando o inimigo perde
         spriteEnemyElem.classList.add("anim-defeat");
         spriteEnemyElem.innerText = "💫";
         faseAtual++;
@@ -676,6 +685,7 @@
 
       if (inimigo.hp === 0) {
         log(`🏆 Você derrotou o ${inimigo.nome} com sucesso!`);
+        tocarSom('inimigo_derrotado'); // Toca o som quando o inimigo perde com habilidade
         spriteEnemyElem.classList.add("anim-defeat");
         spriteEnemyElem.innerText = "💫";
         faseAtual++;

@@ -92,6 +92,7 @@
       display: flex;
       gap: 15px;
       width: 100%;
+      margin-bottom: 10px;
     }
 
     .btn {
@@ -121,6 +122,17 @@
 
     .btn-potion:hover {
       background-color: #d49a1d;
+    }
+
+    .btn-restart {
+      background-color: #f85149;
+      color: #ffffff;
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    .btn-restart:hover {
+      background-color: #da3633;
     }
 
     .btn:disabled {
@@ -160,7 +172,7 @@
 <body>
 
 <div class="game-card">
-  <!-- RPG Dungeon Quest - Douglas Gomes -->
+  <!-- RPG Dungeon Quest - Douglas Gomes de Almeida -->
   <div class="title">⚔️ O SOBREVIVENTE ⚔️</div>
 
   <!-- Cards de Status -->
@@ -169,7 +181,7 @@
       <h3 id="hero-name-display">Herói</h3>
       <div class="status-info" id="hero-class-display">Guerreiro</div>
       <div class="status-info">Vida: <span id="hero-hp">140</span>/<span id="hero-hp-max">140</span></div>
-      <div class="status-info">Kit Médico: <span id="hero-pots">2</span></div>
+      <div class="status-info">Kit Médico: <span id="hero-pots">3</span></div>
     </div>
     <div class="status-card">
       <h3 id="enemy-name">Inimigo</h3>
@@ -186,6 +198,9 @@
     <button class="btn btn-potion" id="btn-potion" onclick="usarPocao()">Usar Kit Médico</button>
   </div>
 
+  <!-- Botão de Reiniciar -->
+  <button class="btn btn-restart" id="btn-restart" style="display: none;" onclick="reiniciarJogo()">Reiniciar Jogo</button>
+
   <!-- Input Inicial (Nome / Opções) -->
   <div class="setup-container" id="setup-container">
     <input type="text" id="setup-input" placeholder="Digite seu nome..." autofocus>
@@ -200,7 +215,7 @@
     hp: 140,
     hpMax: 140,
     ataque: 18,
-    pocoes: 2
+    pocoes: 3
   };
 
   let inimigo = {
@@ -240,6 +255,7 @@
       log(`🏆 PARABÉNS! ${heroi.nome}, VOCÊ ZEROU A MASMORRA!`);
       log(`========================================`);
       document.getElementById("actions-container").style.display = "none";
+      document.getElementById("btn-restart").style.display = "block";
       return;
     }
 
@@ -255,6 +271,7 @@
     document.getElementById("setup-container").style.display = "none";
     document.getElementById("status-container").style.display = "flex";
     document.getElementById("actions-container").style.display = "flex";
+    document.getElementById("btn-restart").style.display = "none";
     
     document.getElementById("btn-attack").disabled = false;
     document.getElementById("btn-potion").disabled = false;
@@ -272,8 +289,8 @@
       heroi.nome = valor;
       log(`Digite o nome do seu herói: ${heroi.nome}`);
       log(`<br>Escolha a sua Classe:`);
-      log(`1. Guerreiro (Mais Vida, ataque equilibrado)`);
-      log(`2. Mago (Ataque mais forte, menos Vida)`);
+      log(`1. Guerreiro (Mais vida, ataque equilibrado)`);
+      log(`2. Mago (Ataque mais forte, menos vida)`);
       input.placeholder = "Opção (1 ou 2)...";
       estado = "CLASSE";
     } else if (estado === "CLASSE") {
@@ -288,9 +305,9 @@
         heroi.hp = 140;
         heroi.hpMax = 140;
         heroi.ataque = 18;
-        heroi.pocoes = 2;
+        heroi.pocoes = 3;
       }
-      log(`✨ ${heroi.nome} o Seu ${heroi.classe} entrou na Masmorra!`);
+      log(`✨ ${heroi.nome}, o seu ${heroi.classe} entrou na Masmorra!`);
       iniciarCombate();
     }
   }
@@ -301,10 +318,10 @@
     // Dano do herói
     let danoHeroi = Math.floor(Math.random() * 6) + (heroi.ataque - 3);
     inimigo.hp = Math.max(0, inimigo.hp - danoHeroi);
-    log(`🗡️ Causaste ${danoHeroi} de dano ao ${inimigo.nome}!`);
+    log(`🗡️ Você causou ${danoHeroi} de dano ao ${inimigo.nome}!`);
 
     if (inimigo.hp === 0) {
-      log(`🏆 Derrotaste o ${inimigo.nome} com sucesso!`);
+      log(`🏆 Você derrotou o ${inimigo.nome} com sucesso!`);
       faseAtual++;
       setTimeout(iniciarCombate, 1200);
       atualizarTela();
@@ -314,12 +331,13 @@
     // Contra-ataque do inimigo
     let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
     heroi.hp = Math.max(0, heroi.hp - danoInimigo);
-    log(`💥 O ${inimigo.nome} contra-atacou e tirou ${danoInimigo} de HP!`);
+    log(`💥 O ${inimigo.nome} contra-atacou e tirou ${danoInimigo} de vida!`);
 
     if (heroi.hp === 0) {
-      log(`💀 Foste derrotado na masmorra... Fim de jogo.`);
+      log(`💀 Você foi derrotado na masmorra... Fim de jogo.`);
       document.getElementById("btn-attack").disabled = true;
       document.getElementById("btn-potion").disabled = true;
+      document.getElementById("btn-restart").style.display = "block";
     }
 
     atualizarTela();
@@ -332,24 +350,53 @@
       let cura = 65;
       heroi.hp = Math.min(heroi.hpMax, heroi.hp + cura);
       heroi.pocoes--;
-      log(`🧪 Usaste um Kit Médico e recuperaste ${cura} de HP!`);
+      log(`🧪 Você usou um Kit Médico e recuperou ${cura} de vida!`);
     } else {
-      log(`❌ Não tens mais Kit Médico!`);
+      log(`❌ Você não tem mais Kit Médico!`);
       return;
     }
 
     // Inimigo ataca enquanto usa a poção
     let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
     heroi.hp = Math.max(0, heroi.hp - danoInimigo);
-    log(`💥 Enquanto bebias a poção, o ${inimigo.nome} atacou e tirou ${danoInimigo} de HP!`);
+    log(`💥 Enquanto você usava o Kit Médico, o ${inimigo.nome} atacou e tirou ${danoInimigo} de vida!`);
 
     if (heroi.hp === 0) {
-      log(`💀 Foste derrotado na masmorra... Fim de jogo.`);
+      log(`💀 Você foi derrotado na masmorra... Fim de jogo.`);
       document.getElementById("btn-attack").disabled = true;
       document.getElementById("btn-potion").disabled = true;
+      document.getElementById("btn-restart").style.display = "block";
     }
 
     atualizarTela();
+  }
+
+  function reiniciarJogo() {
+    faseAtual = 0;
+    estado = "NOME";
+    heroi = {
+      nome: "Herói",
+      classe: "Guerreiro",
+      hp: 140,
+      hpMax: 140,
+      ataque: 18,
+      pocoes: 3
+    };
+
+    document.getElementById("log-box").innerHTML = "";
+    document.getElementById("status-container").style.display = "none";
+    document.getElementById("actions-container").style.display = "none";
+    document.getElementById("btn-restart").style.display = "none";
+    document.getElementById("setup-container").style.display = "flex";
+    
+    const input = document.getElementById("setup-input");
+    input.value = "";
+    input.placeholder = "Digite seu nome...";
+
+    log("========================================");
+    log("        ⚔️ O SOBREVIVENTE ⚔️");
+    log("========================================");
+    log("Digite o nome do seu herói:");
   }
 
   // Tecla Enter no input de nome

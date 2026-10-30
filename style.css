@@ -5,37 +5,118 @@
 }
 
 body {
-  background-color: #0d1117;
-  color: #00ff66;
-  font-family: 'Courier New', Courier, monospace;
+  background: linear-gradient(135deg, #090d16 0%, #151b2b 100%);
+  color: #e6edf3;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 20px;
+  padding: 15px;
 }
 
-.terminal {
-  background-color: #161b22;
+.game-container {
+  background-color: #1a2234;
   border: 2px solid #30363d;
-  border-radius: 8px;
+  border-radius: 12px;
   width: 100%;
-  max-width: 650px;
+  max-width: 750px;
   padding: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8);
 }
 
+.game-header {
+  text-align: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #30363d;
+  padding-bottom: 10px;
+}
+
+.game-header h1 {
+  font-size: 22px;
+  color: #f0b429;
+  letter-spacing: 1px;
+}
+
+.credits {
+  font-size: 11px;
+  color: #8b949e;
+  margin-top: 4px;
+}
+
+/* Painel HUD Gráfico de Batalha */
+.hud-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 15px;
+}
+
+.fighter-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fighter-name {
+  font-weight: bold;
+  font-size: 13px;
+  color: #58a6ff;
+}
+
+.fighter-hp, .fighter-extra {
+  font-size: 11px;
+  color: #8b949e;
+}
+
+.health-bar-container {
+  width: 100%;
+  background-color: #21262d;
+  border-radius: 4px;
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid #30363d;
+}
+
+.health-bar {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.hero-bar {
+  background-color: #238636;
+}
+
+.enemy-bar {
+  background-color: #da3633;
+}
+
+.vs-badge {
+  font-weight: bold;
+  color: #f0b429;
+  padding: 0 15px;
+  font-size: 14px;
+}
+
+/* Consola de Texto */
 .output {
-  height: 380px;
+  height: 320px;
   overflow-y: auto;
   background-color: #0d1117;
   border: 1px solid #30363d;
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 15px;
   white-space: pre-wrap;
   word-wrap: break-word;
-  font-size: 14px;
-  line-height: 1.4;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #7ee787;
   margin-bottom: 15px;
 }
 
@@ -48,28 +129,31 @@ input[type="text"] {
   flex: 1;
   background-color: #0d1117;
   border: 1px solid #30363d;
-  border-radius: 4px;
+  border-radius: 6px;
   color: #ffffff;
-  padding: 10px;
+  padding: 12px;
   font-family: inherit;
   font-size: 14px;
 }
 
 input[type="text"]:focus {
-  outline: 1px solid #00ff66;
+  outline: 1px solid #f0b429;
+  border-color: #f0b429;
 }
 
 button {
-  background-color: #238636;
-  color: #ffffff;
+  background-color: #f0b429;
+  color: #0d1117;
   border: none;
-  border-radius: 4px;
-  padding: 10px 20px;
+  border-radius: 6px;
+  padding: 0 22px;
   cursor: pointer;
   font-family: inherit;
   font-weight: bold;
+  font-size: 14px;
+  transition: background-color 0.2s;
 }
 
 button:hover {
-  background-color: #2ea043;
+  background-color: #d49a1d;
 }

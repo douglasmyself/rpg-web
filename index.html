@@ -20,6 +20,18 @@
       align-items: center;
       min-height: 100vh;
       padding: 10px;
+      position: relative;
+    }
+
+    /* Versão do site em vermelho no canto para teste de atualização */
+    .version-tag {
+      position: absolute;
+      top: 8px;
+      left: 12px;
+      color: #ff4d4d;
+      font-size: 11px;
+      font-weight: bold;
+      font-family: monospace;
     }
 
     .game-card {
@@ -209,21 +221,6 @@
     .btn-potion { background-color: #f0b429; color: #1c2128; }
     .btn-potion:hover { background-color: #d49a1d; }
 
-    .btn-restart {
-      background-color: #f85149;
-      color: #ffffff;
-      width: 100%;
-      padding: 10px;
-      font-size: 13px;
-    }
-    .btn-restart:hover { background-color: #da3633; }
-
-    .btn:disabled {
-      background-color: #373e47;
-      color: #768390;
-      cursor: not-allowed;
-    }
-
     /* Tela Inicial de Criação */
     .setup-container {
       display: flex;
@@ -253,6 +250,8 @@
   </style>
 </head>
 <body>
+
+<div class="version-tag">v1.6</div>
 
 <div class="game-card">
   <div class="title">⚔️ O SOBREVIVENTE ⚔️</div>
@@ -291,11 +290,9 @@
     <button class="btn btn-potion" id="btn-potion" onclick="usarPocao()">Kit Médico</button>
   </div>
 
-  <button class="btn btn-restart" id="btn-restart" style="display: none;" onclick="reiniciarJogo()">Próximo Jogador</button>
-
   <div class="setup-container" id="setup-container">
     <input type="text" id="setup-input" placeholder="Digite seu nome..." autofocus>
-    <button onclick="processarSetup()">Enviar</button>
+    <button onclick="processarSetup()">Jogar</button>
   </div>
 </div>
 
@@ -484,18 +481,23 @@
       tocarSom('vitoria');
       calcularEAdicionarScore(true);
 
-      // Sobe de nível automaticamente com base no progresso da conta
       if (nivelConta < 4) {
         nivelConta++;
         let personagensNomes = ["", "Guerreiro", "Soldado", "Elite", "Mestre"];
-        log(`🎉 **NÍVEL DE CONTA SUBIU PARA ${nivelConta}! Desbloqueado automaticamente: ${personagensNomes[nivelConta].toUpperCase()}**`);
+        log(`🎉 **NÍVEL DE CONTA SUBIU PARA ${nivelConta}!** Nível Máximo Disponível: **${personagensNomes[nivelConta].toUpperCase()}**`);
+      } else {
+        log(`👑 **VOCÊ JÁ ESTÁ NO NÍVEL MÁXIMO DA CONTA (MESTRE)!**`);
       }
 
       atualizarPlacarHTML();
       log(`========================================`);
+      
+      // FIM DE JOGO (VITÓRIA COMPLETA): Permite colocar novo nome direto
       document.getElementById("actions-container").style.display = "none";
-      document.getElementById("btn-restart").style.display = "block";
+      document.getElementById("setup-container").style.display = "flex";
       document.getElementById("arcade-scoreboard").style.display = "block";
+      document.getElementById("setup-input").placeholder = "Próximo jogador (digite o nome)...";
+      faseAtual = 0;
       
       spriteHeroElem.innerText = "👑";
       spriteEnemyElem.classList.add("anim-defeat");
@@ -519,7 +521,6 @@
     document.getElementById("status-container").style.display = "flex";
     document.getElementById("battle-arena").style.display = "flex";
     document.getElementById("actions-container").style.display = "flex";
-    document.getElementById("btn-restart").style.display = "none";
     document.getElementById("arcade-scoreboard").style.display = "none";
     
     document.getElementById("btn-attack").disabled = false;
@@ -536,7 +537,7 @@
     if (!valor) return;
     heroi.nome = valor;
 
-    // SELEÇÃO AUTOMÁTICA DO HERÓI MAIS FORTE COM BASE NO NÍVEL DA CONTA
+    // SELEÇÃO AUTOMÁTICA DO HERÓI MAIS FORTE
     if (nivelConta >= 4) {
       heroi.classe = "Mestre";
       heroi.hp = 150; heroi.hpMax = 150; heroi.ataque = 32;
@@ -564,7 +565,8 @@
     heroi.golpesGastos = 0;
     heroi.habilidadesGastas = 0;
 
-    log(`✨ ${heroi.nome} entrou na Masmorra como **${heroi.classe}** (Nível Máximo Disponível)!`);
+    log(`✨ ${heroi.nome} entrou na Masmorra! 🚀 **Nível Máximo Disponível: ${heroi.classe.toUpperCase()}**`);
+    faseAtual = 0;
     iniciarCombate();
   }
 
@@ -602,9 +604,13 @@
         spriteHeroElem.classList.add("anim-defeat");
         spriteHeroElem.innerText = "😵";
         calcularEAdicionarScore(false);
+        
+        // FIM DE JOGO (DERROTA): Reabre o input para o próximo jogador
         document.getElementById("actions-container").style.display = "none";
-        document.getElementById("btn-restart").style.display = "block";
+        document.getElementById("setup-container").style.display = "flex";
         document.getElementById("arcade-scoreboard").style.display = "block";
+        document.getElementById("setup-input").placeholder = "Próximo jogador (digite o nome)...";
+        faseAtual = 0;
       }
 
       atualizarTela();
@@ -666,7 +672,7 @@
       } else {
         danoEspecial = heroi.ataque + 12;
         inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
-        log(`✨ Você usou Impacto Mágico e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
+        log(`✨ Você usou Impacto Mágico e causou ${danoEspecial} de dano ao `${inimigo.nome}!`);
         heroi.cdHabilidade = 2;
       }
 
@@ -701,29 +707,6 @@
     }
 
     contraAtaqueInimigo();
-  }
-
-  function reiniciarJogo() {
-    faseAtual = 0;
-    
-    document.getElementById("log-box").innerHTML = "";
-    document.getElementById("status-container").style.display = "none";
-    document.getElementById("battle-arena").style.display = "none";
-    document.getElementById("actions-container").style.display = "none";
-    document.getElementById("btn-restart").style.display = "none";
-    document.getElementById("setup-container").style.display = "flex";
-    document.getElementById("arcade-scoreboard").style.display = "block";
-    
-    const input = document.getElementById("setup-input");
-    input.value = "";
-    input.placeholder = "Digite o nome do próximo jogador...";
-
-    log("========================================");
-    log("        ⚔️ O SOBREVIVENTE ⚔️");
-    log("========================================");
-    log(`Nível de Conta Atual: ${nivelConta}`);
-    log("Digite o nome do herói:");
-    atualizarPlacarHTML();
   }
 
   document.getElementById("setup-input").addEventListener("keypress", function(e) {

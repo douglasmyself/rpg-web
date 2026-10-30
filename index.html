@@ -39,8 +39,15 @@
       color: #00ff66;
       font-size: 22px;
       font-weight: bold;
-      margin-bottom: 20px;
+      margin-bottom: 5px;
       text-align: center;
+    }
+
+    .account-level {
+      color: #f0b429;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 15px;
     }
 
     /* Cards de Status (Herói e Inimigo) */
@@ -90,9 +97,10 @@
     /* Botões de Ação */
     .actions-container {
       display: flex;
-      gap: 15px;
+      gap: 10px;
       width: 100%;
       margin-bottom: 10px;
+      flex-wrap: wrap;
     }
 
     .btn {
@@ -101,9 +109,10 @@
       border: none;
       border-radius: 6px;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       transition: background-color 0.2s;
+      min-width: 120px;
     }
 
     .btn-attack {
@@ -113,6 +122,15 @@
 
     .btn-attack:hover {
       background-color: #3fb950;
+    }
+
+    .btn-skill {
+      background-color: #a371f7;
+      color: #ffffff;
+    }
+
+    .btn-skill:hover {
+      background-color: #8a42f5;
     }
 
     .btn-potion {
@@ -174,6 +192,7 @@
 <div class="game-card">
   <!-- RPG Dungeon Quest - Douglas Gomes de Almeida -->
   <div class="title">⚔️ O SOBREVIVENTE ⚔️</div>
+  <div class="account-level" id="account-level">Nível de Conta: 1</div>
 
   <!-- Cards de Status -->
   <div class="status-container" id="status-container" style="display: none;">
@@ -195,11 +214,12 @@
   <!-- Botões de Ação na Batalha -->
   <div class="actions-container" id="actions-container" style="display: none;">
     <button class="btn btn-attack" id="btn-attack" onclick="atacar()">Atacar</button>
+    <button class="btn btn-skill" id="btn-skill" onclick="usarHabilidade()">Habilidade</button>
     <button class="btn btn-potion" id="btn-potion" onclick="usarPocao()">Usar Kit Médico</button>
   </div>
 
   <!-- Botão de Reiniciar -->
-  <button class="btn btn-restart" id="btn-restart" style="display: none;" onclick="reiniciarJogo()">Reiniciar Jogo</button>
+  <button class="btn btn-restart" id="btn-restart" style="display: none;" onclick="reiniciarJogo()">Jogar Novamente</button>
 
   <!-- Input Inicial (Nome / Opções) -->
   <div class="setup-container" id="setup-container">
@@ -209,13 +229,18 @@
 </div>
 
 <script>
+  // Nível da Conta e Personagens Desbloqueados
+  let nivelConta = parseInt(localStorage.getItem("rpg_nivel_conta")) || 1;
+
   let heroi = {
     nome: "Herói",
     classe: "Guerreiro",
     hp: 140,
     hpMax: 140,
     ataque: 18,
-    pocoes: 3
+    pocoes: 3,
+    habilidade: "Escudo",
+    cdHabilidade: 0
   };
 
   let inimigo = {
@@ -233,6 +258,11 @@
   let faseAtual = 0;
   let estado = "NOME";
 
+  function salvarProgresso() {
+    localStorage.setItem("rpg_nivel_conta", nivelConta);
+    document.getElementById("account-level").innerText = `Nível de Conta: ${nivelConta}`;
+  }
+
   function log(mensagem) {
     const logBox = document.getElementById("log-box");
     logBox.innerHTML += (logBox.innerHTML ? "<br>" : "") + mensagem;
@@ -247,12 +277,31 @@
     document.getElementById("hero-pots").innerText = heroi.pocoes;
     document.getElementById("enemy-name").innerText = inimigo.nome;
     document.getElementById("enemy-hp").innerText = inimigo.hp;
+
+    const btnSkill = document.getElementById("btn-skill");
+    btnSkill.innerText = `${heroi.habilidade}${heroi.cdHabilidade > 0 ? ` (${heroi.cdHabilidade})` : ''}`;
+    btnSkill.disabled = (heroi.cdHabilidade > 0);
   }
 
   function iniciarCombate() {
     if (faseAtual >= inimigosDungeon.length) {
       log(`<br>========================================`);
       log(`🏆 PARABÉNS! ${heroi.nome}, VOCÊ ZEROU A MASMORRA!`);
+      
+      // Checar se subiu de nível na conta
+      if (nivelConta < 3) {
+        nivelConta++;
+        salvarProgresso();
+        let novoPersonagem = nivelConta === 2 ? "Soldado" : "Elite";
+        log(`<br>🎉 **PARABÉNS! SUAS VITÓRIAS TE LEVARAM AO NÍVEL ${nivelConta}!**`);
+        log(`🔓 **VOCÊ DESBLOQUEOU O PERSONAGEM: ${novoPersonagem.toUpperCase()}!**`);
+      } else if (nivelConta === 3) {
+        nivelConta = 4; // Liberou Mestre
+        salvarProgresso();
+        log(`<br>👑 **PARABÉNS LENDÁRIO! VOCÊ ATINGIU O NÍVEL MÁXIMO!**`);
+        log(`🔓 **VOCÊ DESBLOQUEOU O PERSONAGEM SUPREMO: MESTRE!**`);
+      }
+
       log(`========================================`);
       document.getElementById("actions-container").style.display = "none";
       document.getElementById("btn-restart").style.display = "block";
@@ -289,33 +338,70 @@
       heroi.nome = valor;
       log(`Digite o nome do seu herói: ${heroi.nome}`);
       log(`<br>Escolha a sua Classe:`);
-      log(`1. Guerreiro (Mais vida, ataque equilibrado)`);
-      log(`2. Mago (Ataque mais forte, menos vida)`);
-      input.placeholder = "Opção (1 ou 2)...";
+      log(`1. Guerreiro (Vida alta, Habilidade: Escudo)`);
+      log(`2. Mago (Dano alto, Habilidade: Impacto Mágico)`);
+      
+      if (nivelConta >= 2) log(`3. 🔓 Soldado (Equilibrado, Habilidade: Escudo Reforçado)`);
+      if (nivelConta >= 3) log(`4. 🔓 Elite (Dano muito alto, Habilidade: Espada de Ouro)`);
+      if (nivelConta >= 4) log(`5. 👑 Mestre (Classe Suprema, Habilidade: Bola de Fogo)`);
+
+      input.placeholder = "Opção de classe...";
       estado = "CLASSE";
     } else if (estado === "CLASSE") {
       if (valor === "2") {
         heroi.classe = "Mago";
-        heroi.hp = 100;
-        heroi.hpMax = 100;
-        heroi.ataque = 25;
-        heroi.pocoes = 3;
+        heroi.hp = 100; heroi.hpMax = 100; heroi.ataque = 22;
+        heroi.habilidade = "Impacto Mágico";
+      } else if (valor === "3" && nivelConta >= 2) {
+        heroi.classe = "Soldado";
+        heroi.hp = 120; heroi.hpMax = 120; heroi.ataque = 20;
+        heroi.habilidade = "Escudo";
+      } else if (valor === "4" && nivelConta >= 3) {
+        heroi.classe = "Elite";
+        heroi.hp = 130; heroi.hpMax = 130; heroi.ataque = 26;
+        heroi.habilidade = "Espada de Ouro";
+      } else if (valor === "5" && nivelConta >= 4) {
+        heroi.classe = "Mestre";
+        heroi.hp = 150; heroi.hpMax = 150; heroi.ataque = 32;
+        heroi.habilidade = "Bola de Fogo";
       } else {
         heroi.classe = "Guerreiro";
-        heroi.hp = 140;
-        heroi.hpMax = 140;
-        heroi.ataque = 18;
-        heroi.pocoes = 3;
+        heroi.hp = 140; heroi.hpMax = 140; heroi.ataque = 18;
+        heroi.habilidade = "Escudo";
       }
+
+      heroi.pocoes = 3;
+      heroi.cdHabilidade = 0;
       log(`✨ ${heroi.nome}, o seu ${heroi.classe} entrou na Masmorra!`);
       iniciarCombate();
     }
   }
 
+  function contraAtaqueInimigo(escudoAtivo = false) {
+    let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
+    if (escudoAtivo) {
+      danoInimigo = Math.max(1, Math.floor(danoInimigo / 2));
+      log(`🛡️ Seu Escudo bloqueou metade do dano!`);
+    }
+    heroi.hp = Math.max(0, heroi.hp - danoInimigo);
+    log(`💥 O ${inimigo.nome} contra-atacou e tirou ${danoInimigo} de vida!`);
+
+    if (heroi.cdHabilidade > 0) heroi.cdHabilidade--;
+
+    if (heroi.hp === 0) {
+      log(`💀 Você foi derrotado na masmorra... Fim de jogo.`);
+      document.getElementById("btn-attack").disabled = true;
+      document.getElementById("btn-potion").disabled = true;
+      document.getElementById("btn-skill").disabled = true;
+      document.getElementById("btn-restart").style.display = "block";
+    }
+
+    atualizarTela();
+  }
+
   function atacar() {
     if (heroi.hp <= 0 || inimigo.hp <= 0) return;
 
-    // Dano do herói
     let danoHeroi = Math.floor(Math.random() * 6) + (heroi.ataque - 3);
     inimigo.hp = Math.max(0, inimigo.hp - danoHeroi);
     log(`🗡️ Você causou ${danoHeroi} de dano ao ${inimigo.nome}!`);
@@ -328,19 +414,44 @@
       return;
     }
 
-    // Contra-ataque do inimigo
-    let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
-    heroi.hp = Math.max(0, heroi.hp - danoInimigo);
-    log(`💥 O ${inimigo.nome} contra-atacou e tirou ${danoInimigo} de vida!`);
+    contraAtaqueInimigo();
+  }
 
-    if (heroi.hp === 0) {
-      log(`💀 Você foi derrotado na masmorra... Fim de jogo.`);
-      document.getElementById("btn-attack").disabled = true;
-      document.getElementById("btn-potion").disabled = true;
-      document.getElementById("btn-restart").style.display = "block";
+  function usarHabilidade() {
+    if (heroi.hp <= 0 || inimigo.hp <= 0 || heroi.cdHabilidade > 0) return;
+
+    let usoEscudo = false;
+
+    if (heroi.habilidade === "Escudo") {
+      log(`🛡️ Você ativou o Escudo! Defesa aumentada neste turno.`);
+      usoEscudo = true;
+      heroi.cdHabilidade = 2;
+    } else if (heroi.habilidade === "Espada de Ouro") {
+      let danoEspecial = heroi.ataque + 18;
+      inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
+      log(`⚔️✨ VOCÊ USOU A ESPADA DE OURO! Causou ${danoEspecial} de dano crítico ao ${inimigo.nome}!`);
+      heroi.cdHabilidade = 3;
+    } else if (heroi.habilidade === "Bola de Fogo") {
+      let danoEspecial = heroi.ataque + 28;
+      inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
+      log(`🔥 DESTRUIÇÃO! Você lançou uma BOLA DE FOGO e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
+      heroi.cdHabilidade = 3;
+    } else {
+      let danoEspecial = heroi.ataque + 12;
+      inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
+      log(`✨ Você usou Impacto Mágico e causou ${danoEspecial} de dano!`);
+      heroi.cdHabilidade = 2;
     }
 
-    atualizarTela();
+    if (inimigo.hp === 0) {
+      log(`🏆 Você derrotou o ${inimigo.nome} com sucesso!`);
+      faseAtual++;
+      setTimeout(iniciarCombate, 1200);
+      atualizarTela();
+      return;
+    }
+
+    contraAtaqueInimigo(usoEscudo);
   }
 
   function usarPocao() {
@@ -356,33 +467,13 @@
       return;
     }
 
-    // Inimigo ataca enquanto usa a poção
-    let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
-    heroi.hp = Math.max(0, heroi.hp - danoInimigo);
-    log(`💥 Enquanto você usava o Kit Médico, o ${inimigo.nome} atacou e tirou ${danoInimigo} de vida!`);
-
-    if (heroi.hp === 0) {
-      log(`💀 Você foi derrotado na masmorra... Fim de jogo.`);
-      document.getElementById("btn-attack").disabled = true;
-      document.getElementById("btn-potion").disabled = true;
-      document.getElementById("btn-restart").style.display = "block";
-    }
-
-    atualizarTela();
+    contraAtaqueInimigo();
   }
 
   function reiniciarJogo() {
     faseAtual = 0;
     estado = "NOME";
-    heroi = {
-      nome: "Herói",
-      classe: "Guerreiro",
-      hp: 140,
-      hpMax: 140,
-      ataque: 18,
-      pocoes: 3
-    };
-
+    
     document.getElementById("log-box").innerHTML = "";
     document.getElementById("status-container").style.display = "none";
     document.getElementById("actions-container").style.display = "none";
@@ -396,15 +487,16 @@
     log("========================================");
     log("        ⚔️ O SOBREVIVENTE ⚔️");
     log("========================================");
+    log(`Nível de Conta Atual: ${nivelConta}`);
     log("Digite o nome do seu herói:");
   }
 
-  // Tecla Enter no input de nome
   document.getElementById("setup-input").addEventListener("keypress", function(e) {
     if (e.key === "Enter") processarSetup();
   });
 
-  // Início
+  // Inicialização
+  salvarProgresso();
   log("========================================");
   log("        ⚔️ O SOBREVIVENTE ⚔️");
   log("========================================");

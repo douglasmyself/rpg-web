@@ -52,6 +52,12 @@ header{display:flex;align-items:center;justify-content:space-between;font-size:1
 .b em{position:absolute;top:-8px;right:-4px;min-width:24px;height:24px;padding:0 5px;border-radius:999px;background:#ef4444;border:2px solid #fff;color:#fff;font-style:normal;font-size:13px;display:grid;place-items:center;text-shadow:none}
 .err{border-color:#ef4444!important;animation:shk .35s}
 @keyframes shk{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+/* conta Google */
+#au{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+#ai{display:flex;align-items:center;justify-content:center;gap:8px 12px;flex-wrap:wrap;font-size:clamp(13px,3.6vw,15px)}
+#an{font-weight:700;color:#fff}
+#ab{color:#ffd23f;font-weight:700}
+#lo{background:#1c2128;border:1px solid #373e47;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px}
 /* ranking */
 #rk{width:min(390px,94%);font-size:clamp(12px,3.3vw,14px);color:#e6edf3;display:flex;flex-direction:column;gap:6px}
 #rt{font-weight:800;color:#ffb347;letter-spacing:1px;font-size:clamp(13px,3.6vw,16px)}
@@ -95,6 +101,10 @@ header{display:flex;align-items:center;justify-content:space-between;font-size:1
   <div id="menu" class="ov on">
     <h1>⚔️ O SOBREVIVENTE ⚔️</h1>
     <p id="msg">Sobreviva a 10 salas e derrote os 2 chefes!</p>
+    <div id="au" class="hid">
+      <button class="b a2" id="gl">🔐 ENTRAR COM GOOGLE</button>
+      <div id="ai" class="hid"><span id="an"></span><span id="ab"></span><button type="button" id="lo">Sair</button></div>
+    </div>
     <input id="nm" maxlength="12" placeholder="Seu nome..." autocomplete="off">
     <button class="b g" id="nx">CONTINUAR</button>
     <div id="rk">
@@ -138,16 +148,20 @@ header{display:flex;align-items:center;justify-content:space-between;font-size:1
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 (()=>{
 const $=id=>document.getElementById(id);
 
 /* ===== CONFIGURAÇÃO ===== */
-// RANKING ONLINE: cole aqui a URL do seu Firebase Realtime Database.
-// Exemplo: 'https://meu-jogo-default-rtdb.firebaseio.com'
-// Enquanto estiver vazio, o ranking funciona só neste aparelho.
+// RANKING ONLINE: URL do seu Firebase Realtime Database.
 const DB='https://rgb-web-d6f46-default-rtdb.firebaseio.com/';
 const DBU=DB.trim().replace(/\/+$/,'');
+// LOGIN COM GOOGLE: cole aqui a configuração do app Web do seu projeto Firebase
+// (Console do Firebase > Configurações do projeto > Seus apps > App da Web > firebaseConfig).
+// Enquanto apiKey estiver vazio, o jogo continua pedindo o nome digitado, como antes.
+const FB={apiKey:'',authDomain:'',projectId:'',appId:''};
 // MODO ONLINE: servidores usados para furar firewall/NAT.
 // (opcional) Se ainda falhar em algumas redes, crie uma conta grátis em metered.ca
 // e cole aqui os servidores TURN que ela gerar, no formato {urls:'turn:...',username:'...',credential:'...'}
@@ -168,6 +182,7 @@ const EN=[['Gosma','🦠',45,9],['Morcego','🦇',55,11],['Esqueleto','💀',70,
  ['Aranha','🕷️',95,17],['Fantasma','👻',110,19],['Golem','🗿',140,21],['Demônio','😈',160,23],['Dragão (Chefe)','🐉',280,27,1]];
 let PV=null,PR=null,TM=30,live=0,G=null,E=null,busy=0,lvl=1,sel=0,rank=[],ps=[],fx=[],L=[],mute=false,ID=IDLE,pend=[],TOP=[],SUBP=null,RQ=0;
 let A={h:{l:0,f:0,d:0,p:0},e:{l:0,f:0,d:0,p:0},sh:0};
+let FBON=false,AU=null,USER=null,myBest=0;
 const okE=x=>x&&typeof x.n==='string'&&typeof x.e==='string'&&Number.isFinite(x.s);
 try{
   lvl=Math.min(6,Math.max(1,parseInt(localStorage.getItem('rpgLv'),10)||1));
@@ -455,8 +470,33 @@ function pickui(){
 function menu(){
   G=null;E=null;BQ.length=0;CDN=null;clearInterval(CI);$('pick').classList.remove('on');$('net').classList.remove('on');
   $('lv').textContent='Nível de Conta: '+lvl;$('menu').classList.add('on');
-  $('sq').value='';ID=IDLE;
+  $('sq').value='';ID=IDLE;authUI();
   Promise.resolve(SUBP).then(showTop);
+}
+
+/* ===== CONTA GOOGLE (Firebase Auth) ===== */
+function authUI(){
+  $('au').classList.toggle('hid',!FBON);$('nm').classList.toggle('hid',FBON);
+  $('gl').classList.toggle('hid',!FBON||!!USER);$('ai').classList.toggle('hid',!USER);
+  $('nx').classList.toggle('hid',FBON&&!USER);
+  if(USER){$('an').textContent='👤 '+$('nm').value;$('ab').textContent='🏅 Seu recorde: '+myBest+' pts'}
+}
+if(FB.apiKey&&window.firebase){
+  try{
+    firebase.initializeApp(FB);AU=firebase.auth();FBON=true;
+    try{AU.useDeviceLanguage()}catch(e){}
+    AU.onAuthStateChanged(async u=>{
+      USER=u;myBest=0;
+      if(u){
+        const n=cn((u.displayName||'').trim().split(/\s+/)[0]||(u.email||'').split('@')[0]);
+        $('nm').value=n;try{localStorage.setItem('rpgNm',n)}catch(e){}
+        authUI();
+        try{const r=await jget('/best/'+u.uid+'.json');if(r&&Number.isFinite(r.s))myBest=r.s}catch(e){}
+        flush();
+      }else $('nm').value='';
+      authUI();if($('menu').classList.contains('on')&&!G)showTop();
+    });
+  }catch(e){FBON=false}
 }
 
 /* ===== RANKING (online + local) ===== */
@@ -469,16 +509,20 @@ async function jget(p){
   try{const r=await fetch(DBU+p,{signal:a.signal});if(!r.ok)throw new Error('http '+r.status);return await r.json()}
   finally{clearTimeout(t)}
 }
+/* Cada conta tem 1 registro em /best/<uid>; só é substituído quando o novo escore é maior. */
 async function submit(e){
-  if(!DBU||!(e.s>0))return;
+  if(!DBU||!USER||!(e.s>0))return;
+  const u=USER.uid;
   try{
-    const r=await fetch(DBU+'/scores.json',{method:'POST',body:JSON.stringify({n:e.n,k:nk(e.n),e:e.e,s:e.s,d:{'.sv':'timestamp'}})});
-    if(!r.ok){if(r.status>=500)throw new Error('http');return}
-  }catch(x){pend.push({n:e.n,e:e.e,s:e.s});pend=pend.slice(-5);save()}
+    const tk=await USER.getIdToken(),cur=await jget('/best/'+u+'.json');
+    if(cur&&Number.isFinite(cur.s)&&cur.s>=e.s)return;
+    const r=await fetch(DBU+'/best/'+u+'.json?auth='+encodeURIComponent(tk),{method:'PUT',body:JSON.stringify({n:e.n,k:nk(e.n),e:e.e,s:e.s,d:{'.sv':'timestamp'}})});
+    if(!r.ok&&r.status>=500)throw new Error('http');
+  }catch(x){pend.push({n:e.n,e:e.e,s:e.s,u});pend=pend.slice(-5);save()}
 }
 async function flush(){
-  if(!DBU||!pend.length)return;
-  const a=pend;pend=[];save();
+  if(!DBU||!USER||!pend.length)return;
+  const a=pend.filter(x=>x.u===USER.uid);pend=pend.filter(x=>x.u!==USER.uid);save();
   for(const e of a)await submit(e);
 }
 function paint(a,o){
@@ -489,7 +533,7 @@ function paint(a,o){
   const mine=nk($('nm').value);
   a.forEach((q,i)=>{
     const d=document.createElement('div'),x=document.createElement('span'),b=document.createElement('b'),c=document.createElement('small');
-    d.className='rr'+((q.k||nk(q.n))===mine?' me':'')+(o.click?' cl':'');
+    d.className='rr'+((USER&&q.u?q.u===USER.uid:(q.k||nk(q.n))===mine)?' me':'')+(o.click?' cl':'');
     x.textContent=(MD[i]||(i+1)+'.')+' '+q.n+' '+q.e;b.textContent=q.s+' pts';c.textContent=dstr(q.d);
     d.append(x,b,c);
     if(o.click)d.onclick=()=>{$('sq').value=q.n;search()};
@@ -504,11 +548,9 @@ async function showTop(){
   }
   $('rt').textContent='🏆 TOP 10 • ONLINE';$('rl').textContent='Carregando ranking...';
   try{
-    const j=await jget('/scores.json?orderBy=%22s%22&limitToLast=100');
+    const j=await jget('/best.json?orderBy=%22s%22&limitToLast=100');
     if(id!==RQ)return;
-    const best=new Map();
-    Object.values(j||{}).filter(okE).sort((a,b)=>b.s-a.s).forEach(x=>{const k=x.k||nk(x.n);x.k=k;if(!best.has(k))best.set(k,x)});
-    TOP=[...best.values()];
+    TOP=Object.entries(j||{}).filter(([,x])=>okE(x)).map(([u,x])=>{x.u=u;x.k=x.k||nk(x.n);return x}).sort((a,b)=>b.s-a.s);
     paint(TOP.slice(0,10),{empty:'Ainda não há pontuações. Seja o primeiro!'});
   }catch(e){
     if(id!==RQ)return;
@@ -520,21 +562,18 @@ async function search(){
   if(!DBU){$('rt').textContent='🔍 BUSCA (neste aparelho)';paint(rank.filter(x=>nk(x.n).startsWith(q)),{empty:'Nada encontrado neste aparelho.'});return}
   const id=++RQ;$('rt').textContent='🔍 BUSCANDO...';$('rl').textContent='Carregando...';
   try{
-    const j=await jget('/scores.json?orderBy=%22k%22&startAt='+jq(q)+'&endAt='+jq(q+'\uf8ff')+'&limitToFirst=300');
+    const j=await jget('/best.json?orderBy=%22k%22&startAt='+jq(q)+'&endAt='+jq(q+'\uf8ff')+'&limitToFirst=300');
     if(id!==RQ)return;
-    const l=Object.values(j||{}).filter(okE).map(x=>{x.k=x.k||nk(x.n);return x});
+    const l=Object.entries(j||{}).filter(([,x])=>okE(x)).map(([u,x])=>{x.u=u;x.k=x.k||nk(x.n);return x}).sort((a,b)=>b.s-a.s);
     if(!l.length){$('rt').textContent='🔍 NENHUM JOGADOR';paint([],{empty:'Nenhum jogador com esse nome.'});return}
     const ex=l.filter(x=>x.k===q);
     if(ex.length){
-      ex.sort((a,b)=>b.s-a.s);
-      const pos=TOP.findIndex(x=>x.k===q);
-      $('rt').textContent='👤 '+ex[0].n.toUpperCase()+' • MELHORES PARTIDAS';
+      const pos=TOP.findIndex(x=>x.u===ex[0].u);
+      $('rt').textContent='👤 '+ex[0].n.toUpperCase()+' • RECORDE';
       paint(ex.slice(0,10),{note:pos>=0?'Posição no ranking geral: #'+(pos+1):''});
     }else{
-      const best=new Map();
-      l.sort((a,b)=>b.s-a.s).forEach(x=>{if(!best.has(x.k))best.set(x.k,x)});
       $('rt').textContent='🔍 JOGADORES ENCONTRADOS';
-      paint([...best.values()].slice(0,10),{click:1});
+      paint(l.slice(0,10),{click:1});
     }
   }catch(e){
     if(id!==RQ)return;
@@ -646,9 +685,10 @@ function fin(v){
   if(!v)S.lose();
   if(s>0){
     rank.push({n:G.n,e:G.h.e,s,d:Date.now()});rank.sort((a,b)=>b.s-a.s);rank=rank.slice(0,10);
-    SUBP=submit({n:G.n,e:G.h.e,s}); // envia a pontuação para o ranking online
+    SUBP=submit({n:G.n,e:G.h.e,s}); // envia para o ranking online (só substitui se for recorde da conta)
   }
   let m=v?'🏆 Vitória! '+s+' pontos.':'💀 Derrotado na sala '+G.r+'. '+s+' pontos.';
+  if(USER&&s>myBest){myBest=s;m+=' 🏅 Novo recorde pessoal!'}
   if(v&&lvl<6){lvl++;m+=' Nível de conta '+lvl+': +5% de vida e ataque!'}
   save();
   setTimeout(()=>{$('msg').textContent=m;menu()},4800);
@@ -796,9 +836,23 @@ $('cp').onclick=()=>{
   const ok=()=>{$('cp').textContent='✅ COPIADO!';setTimeout(()=>{$('cp').textContent='📋 COPIAR CÓDIGO'},1800)};
   try{navigator.clipboard.writeText(c).then(ok,()=>{})}catch(e){}
 };
+$('gl').onclick=async()=>{
+  if(!AU)return;S.click();
+  const pv=new firebase.auth.GoogleAuthProvider();pv.setCustomParameters({prompt:'select_account'});
+  try{await AU.signInWithPopup(pv)}
+  catch(e){
+    const c=e&&e.code;
+    if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'||c==='auth/web-storage-unsupported'){try{await AU.signInWithRedirect(pv)}catch(x){}}
+    else if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request'){
+      $('msg').textContent=c==='auth/unauthorized-domain'?'⚠️ Este site ainda não foi autorizado no Firebase (Authentication > Configurações > Domínios autorizados).':'⚠️ Não foi possível entrar com o Google ('+(c||'erro')+').';
+    }
+  }
+};
+$('lo').onclick=()=>{S.click();if(AU)AU.signOut()};
 $('nm').addEventListener('input',()=>$('nm').classList.remove('err'));
 $('nx').onclick=()=>{
   const nm=$('nm');
+  if(FBON&&!USER){$('msg').textContent='⚠️ Entre com sua conta Google para continuar!';S.miss();return}
   if(!nm.value.replace(/[^\p{L}\p{N} _-]/gu,'').trim()){
     $('msg').textContent='⚠️ Digite seu nome para continuar!';nm.classList.remove('err');void nm.offsetWidth;nm.classList.add('err');nm.focus();S.miss();return;
   }
@@ -817,7 +871,7 @@ document.addEventListener('keydown',e=>{
   if($('menu').classList.contains('on')||$('pick').classList.contains('on')||$('buff').classList.contains('on')||$('net').classList.contains('on'))return;
   if(/^[1-4]$/.test(e.key))act(+e.key-1);
 });
-try{$('nm').value=localStorage.getItem('rpgNm')||''}catch(e){}
+try{if(!FBON)$('nm').value=localStorage.getItem('rpgNm')||''}catch(e){}
 menu();flush();
 })();
 </script>

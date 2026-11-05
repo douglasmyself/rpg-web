@@ -29,7 +29,8 @@ header{position:relative;z-index:10;display:grid;grid-template-columns:1fr auto 
 .ov.on{display:flex}
 .ov h1{font-size:clamp(18px,5.2vw,28px);color:#ffb347}
 .ov h2{font-size:clamp(15px,4.2vw,20px);color:#ffb347}
-#msg,#hd{font-size:clamp(11px,3vw,14px);color:#9fb0c0;max-width:420px}
+#hd{font-size:clamp(11px,3vw,14px);color:#9fb0c0;max-width:420px}
+#msg{font-size:clamp(16px,4.6vw,21px);line-height:1.45;white-space:pre-line;color:#d3dde8;max-width:420px}
 #nm{width:min(280px,80%);background:#1c2128;border:1px solid #373e47;border-radius:8px;color:#fff;padding:9px;font-size:16px;text-align:center}
 #hs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:min(420px,100%)}
 .hb{background:#1c2128;border:2px solid #30363d;color:#fff;border-radius:8px;padding:8px 2px;font-size:clamp(10px,2.9vw,13px);cursor:pointer}
@@ -240,7 +241,7 @@ const H=[
  {n:'Ninja do Fogo',e:'🔥',hp:105,a:21,s:{n:'Esfera de Fogo',m:2.6,cd:3,d:'grande dano à distância'}},
  {n:'Ninja Curandeiro',e:'🌿',hp:150,a:17,s:{n:'Palma Curativa',m:1.2,hl:35,cd:3,d:'golpeia e cura 35 de vida'}}];
 const DHP=1.25,DDM=1.3; // dificuldade: vida e dano dos inimigos
-const EN=[['Gosma','🦠',45,9],['Morcego','🦇',55,11],['Esqueleto','💀',70,13],['Goblin','👺',85,14],['Ogro (Chefe)','👹',170,17,1],
+const EN=[['Vírus','🦠',45,9],['Morcego','🦇',55,11],['Esqueleto','💀',70,13],['Goblin','👺',85,14],['Ogro (Chefe)','👹',170,17,1],
  ['Aranha','🕷️',95,17],['Fantasma','👻',110,19],['Golem','🗿',140,21],['Demônio','😈',160,23],['Dragão (Chefe)','🐉',280,27,1]];
 let PV=null,PR=null,TM=30,live=0,G=null,E=null,busy=0,lvl=1,sel=0,rank=[],ps=[],fx=[],L=[],mute=false,ID=IDLE,pend=[],TOP=[],SUBP=null,RQ=0;
 let A={h:{l:0,f:0,d:0,p:0},e:{l:0,f:0,d:0,p:0},sh:0};
@@ -309,7 +310,7 @@ function bar(x,y,bw,v,mx,nm,al,fs){const r=Math.max(0,v/mx),bh=fs+8;ctx.fillStyl
 function spr(em,x,y,sz,a,dir,ph,t,boss){
   ctx.save();
   const off=mvf(a.l>0?1-a.l:-1)*GP(sz)*dir,bob=Math.sin(t/280+ph)*sz*.04;
-  ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.ellipse(x,y+sz*.05,sz*.45,sz*.1,0,0,7);ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.ellipse(x+off,y+sz*.05,sz*.45,sz*.1,0,0,7);ctx.fill();
   ctx.translate(x+off,y-sz*.45+bob-(a.v?Math.abs(Math.sin(t/190))*sz*.12:0));
   if(a.d){ctx.rotate(-a.p*1.5*dir);ctx.translate(0,a.p*sz*.3);ctx.globalAlpha=1-a.p*.6}
   if(a.f>0&&((t/60)|0)%2)ctx.globalAlpha*=.35;
@@ -336,7 +337,7 @@ function fig(x,y,sz,dir,a,t,f,boss){
   if(q>=0&&!a.d)ang=rg?1.5+sn*.5:q<.3?.9+1.5*q/.3:q<.6?2.4-1.5*(q-.3)/.3:.9;
   if(a.v)ang=2.6+Math.sin(t/150)*.25;const wa=f.w==='staff'?3.14-sn*1.2:ang+({hammer:.8,club:.8,axe:.8,spear:1.4}[f.w]||.9);
   ctx.save();
-  ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.ellipse(x,y+sz*.03,sz*.4,sz*.08,0,0,7);ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.ellipse(x+mvf(q)*(rg?0:GP(sz))*dir,y+sz*.03,sz*.4*(f.s||1),sz*.08*(f.s||1),0,0,7);ctx.fill();
   ctx.translate(x+mvf(q)*(rg?0:GP(sz))*dir,y-(a.v?Math.abs(Math.sin(t/190))*sz*.1:0));ctx.scale(dir*u,u);
   if(a.d)ctx.rotate(flat?-dn*1.5:dn*.3);
   if(a.f>0&&((t/60)|0)%2)ctx.globalAlpha*=.4;
@@ -722,7 +723,7 @@ function act(t){
     G.cd=s.cd+1;S.skill();const n=s.h||1;
     strike(s.m*G.sm,!!s.c,n,tot=>{if(s.l)healFx(Math.round(tot*.7));if(s.hl)healFx(s.hl)});
     end(n*220+800);
-  }else if(t===2){G.def=1;G.dc=3;log('🛡️ '+G.n+' ergue o escudo: bloqueia o próximo golpe!');S.click();ft('h','🛡️','#58a6ff');end(600)}
+  }else if(t===2){G.def=2;G.dc=4;log('🛡️ '+G.n+' ergue o escudo: bloqueia os próximos 2 golpes!');S.click();ft('h','🛡️','#58a6ff');end(600)}
   else{G.k--;log('🧪 Kit Médico usado!');healFx(65);end(700)}
 }
 /* Anti-"ficar parado": se o jogador não reagir em IDLE segundos, o inimigo ataca (solo)
@@ -759,7 +760,7 @@ function win(){
   },4600);
 }
 function showBuff(){
-  const P2=[['⚔️ +15% de ataque',()=>{G.a=Math.round(G.a*1.15)}],['❤️ +25 de vida máxima',()=>{G.mx+=25;G.hp=Math.min(G.mx,G.hp+25)}],['🧪 +1 Kit Médico',()=>{G.k++}],['🔮 Habilidade +20% de dano',()=>{G.sm*=1.2}]].sort(()=>Math.random()-.5).slice(0,3);
+  const P2=[['⚔️ +10% de ataque',()=>{G.a=Math.round(G.a*1.10)}],['❤️ +20 de vida máxima',()=>{G.mx+=20;G.hp=Math.min(G.mx,G.hp+20)}],['🧪 +1 Kit Médico',()=>{G.k++}],['🔮 Habilidade +15% de dano',()=>{G.sm*=1.15}]].sort(()=>Math.random()-.5).slice(0,3);
   const o=$('bo');o.textContent='';
   P2.forEach(p=>{const b=document.createElement('button');b.className='b g';b.textContent=p[0];b.onclick=()=>{p[1]();$('buff').classList.remove('on');S.heal();G.r++;next()};o.appendChild(b)});
   $('buff').classList.add('on');$('mn').style.visibility='hidden';$('dm').classList.add('hid');
@@ -772,8 +773,8 @@ function fin(v){
     SUBP=submit({n:G.n,e:G.h.e,s}); // envia para o ranking online (só substitui se for recorde da conta)
   }
   let m=v?'🏆 Vitória! '+s+' pontos.':'💀 Derrotado na sala '+G.r+'. '+s+' pontos.';
-  if(USER&&s>myBest){myBest=s;m+=' 🏅 Novo recorde pessoal!'}
-  if(v&&lvl<6){lvl++;m+=' Nível de conta '+lvl+': +5% de vida e ataque!'}
+  if(USER&&s>myBest){myBest=s;m+='\n🏅 Novo recorde pessoal!'}
+  if(v&&lvl<6){lvl++;m+='\nNível de conta '+lvl+': +5% de vida e ataque!'}
   save();
   setTimeout(()=>{$('msg').textContent=m;menu()},4800);
 }
@@ -967,7 +968,7 @@ const two=(id,fn)=>{$(id).onclick=()=>{
 }};
 two('mr',()=>{$('dm').classList.add('hid');killGame();startSolo()});
 two('mq',()=>{$('dm').classList.add('hid');const d=!!PV;killGame();$('msg').textContent=d?'Você desistiu do duelo.':'Você desistiu da partida.';menu()});
-document.addEventListener('click',e=>{const d=$('dm');if(!d.classList.contains('hid')&&!d.contains(e.target)&&e.target!==$('mn'))d.classList.add('hid')});
+document.addEventListener('click',e=>{const d=$('dm');if(!d.classList.contains('hid')&&!d.contains(e.target)&&!(e.target.closest&&e.target.closest('#mn,#pm')))d.classList.add('hid')});
 $('mp').onclick=()=>{S.click();$('dm').classList.add('hid');$('sq').value='';$('board').classList.add('on');showTop()};
 $('bk').onclick=()=>{S.click();$('board').classList.remove('on')};
 $('mo').onclick=()=>{S.click();$('dm').classList.add('hid');killGame();if(AU)AU.signOut();$('msg').textContent='Você saiu da conta.';menu()};

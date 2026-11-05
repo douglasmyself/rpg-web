@@ -1,742 +1,366 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RPG Dungeon Quest - O Sobrevivente</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
-      color: #e6edf3;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 10px;
-      position: relative;
-    }
-
-    /* Versão do site em vermelho no canto para teste de atualização */
-    .version-tag {
-      position: absolute;
-      top: 8px;
-      left: 12px;
-      color: #ff4d4d;
-      font-size: 11px;
-      font-weight: bold;
-      font-family: monospace;
-    }
-
-    .game-card {
-      background-color: #1c2128;
-      border: 1px solid #30363d;
-      border-radius: 10px;
-      width: 100%;
-      max-width: 480px;
-      padding: 16px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .title {
-      color: #00ff66;
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 2px;
-      text-align: center;
-    }
-
-    .account-level {
-      color: #f0b429;
-      font-size: 12px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    /* ARENA VISUAL COMPACTA */
-    .battle-arena {
-      width: 100%;
-      height: 100px;
-      background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-around;
-      align-items: flex-end;
-      padding: 10px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .character-sprite {
-      font-size: 40px;
-      transition: transform 0.4s ease, opacity 0.5s ease;
-      position: relative;
-      user-select: none;
-      filter: drop-shadow(0px 3px 5px rgba(0,0,0,0.5));
-    }
-
-    /* Animações suaves */
-    .anim-attack-hero { animation: attackHero 0.8s ease-in-out; }
-    .anim-attack-enemy { animation: attackEnemy 0.8s ease-in-out; }
-    .anim-hit { animation: takeHit 0.6s ease-in-out; }
-    .anim-heal { animation: healEffect 0.8s ease-in-out; }
-    .anim-defeat { transform: rotate(90deg) translateY(15px) !important; opacity: 0.6; }
-
-    @keyframes attackHero {
-      0% { transform: translateX(0); }
-      50% { transform: translateX(50px) scale(1.15); }
-      100% { transform: translateX(0); }
-    }
-
-    @keyframes attackEnemy {
-      0% { transform: translateX(0); }
-      50% { transform: translateX(-50px) scale(1.15); }
-      100% { transform: translateX(0); }
-    }
-
-    @keyframes takeHit {
-      0% { filter: drop-shadow(0 0 12px red); transform: scale(0.85); }
-      50% { transform: translateX(8px); }
-      100% { filter: none; transform: scale(1); }
-    }
-
-    @keyframes healEffect {
-      0% { filter: drop-shadow(0 0 12px #00ff66); transform: scale(1); }
-      50% { transform: scale(1.2) translateY(-10px); }
-      100% { filter: none; transform: scale(1); }
-    }
-
-    /* Cards de Status Compactos */
-    .status-container {
-      display: flex;
-      gap: 10px;
-      width: 100%;
-      margin-bottom: 10px;
-    }
-
-    .status-card {
-      flex: 1;
-      background-color: #22272e;
-      border: 1px solid #373e47;
-      border-radius: 6px;
-      padding: 10px;
-    }
-
-    .status-card h3 {
-      font-size: 14px;
-      color: #f08c00;
-      margin-bottom: 6px;
-    }
-
-    .status-info {
-      font-size: 12px;
-      color: #adbac7;
-      margin-bottom: 3px;
-    }
-
-    /* Caixa de Log Reduzida */
-    .log-box {
-      width: 100%;
-      height: 110px;
-      background-color: #2d333b;
-      border: 1px solid #373e47;
-      border-radius: 6px;
-      padding: 8px;
-      overflow-y: auto;
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 12px;
-      line-height: 1.4;
-      color: #adbac7;
-      margin-bottom: 10px;
-    }
-
-    /* Placar estilo Fliperama */
-    .scoreboard {
-      width: 100%;
-      background-color: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      padding: 8px;
-      margin-bottom: 10px;
-      font-size: 11px;
-    }
-
-    .scoreboard h4 {
-      color: #00ff66;
-      margin-bottom: 4px;
-      text-align: center;
-      font-size: 12px;
-    }
-
-    .score-list {
-      list-style: none;
-      max-height: 50px;
-      overflow-y: auto;
-    }
-
-    .score-list li {
-      display: flex;
-      justify-content: space-between;
-      padding: 2px 4px;
-      border-bottom: 1px dashed #30363d;
-      color: #c9d1d9;
-    }
-
-    /* Botões de Ação */
-    .actions-container {
-      display: flex;
-      gap: 8px;
-      width: 100%;
-      margin-bottom: 8px;
-    }
-
-    .btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 12px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .btn-attack { background-color: #2ea043; color: #ffffff; }
-    .btn-attack:hover { background-color: #3fb950; }
-
-    .btn-skill { background-color: #a371f7; color: #ffffff; }
-    .btn-skill:hover { background-color: #8a42f5; }
-
-    .btn-potion { background-color: #f0b429; color: #1c2128; }
-    .btn-potion:hover { background-color: #d49a1d; }
-
-    /* Tela Inicial de Criação */
-    .setup-container {
-      display: flex;
-      gap: 8px;
-      width: 100%;
-    }
-
-    .setup-container input {
-      flex: 1;
-      background-color: #22272e;
-      border: 1px solid #373e47;
-      border-radius: 6px;
-      color: #ffffff;
-      padding: 8px;
-      font-size: 13px;
-    }
-
-    .setup-container button {
-      background-color: #2ea043;
-      color: white;
-      border: none;
-      padding: 0 15px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RPG Dungeon Quest - O Sobrevivente</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#07090d;color:#e6edf3;font-family:'Segoe UI',system-ui,sans-serif;touch-action:manipulation}
+#app{position:relative;height:100vh;height:100dvh;max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:6px;padding:max(6px,env(safe-area-inset-top)) 8px max(6px,env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700}
+#tt{color:#ffb347;font-size:clamp(14px,3.8vw,20px);letter-spacing:.5px}
+#lv{color:#7ee787;min-width:34%}
+#mu{background:#1c2128;border:1px solid #373e47;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;margin-left:auto}
+#cv{flex:1;min-height:0;width:100%;border:1px solid #30363d;border-radius:10px;display:block}
+#log{height:4em;font:12px/1.35 monospace;background:#12161d;border:1px solid #30363d;border-radius:8px;padding:4px 8px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;color:#8b98a5}
+#log div:last-child{color:#fff}
+#act{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.b{border:0;border-radius:8px;padding:10px 2px;font-weight:700;font-size:clamp(10px,2.9vw,13px);color:#fff;cursor:pointer;line-height:1.2;min-height:46px;transition:transform .1s,filter .15s}
+.b:active:not(:disabled){transform:scale(.95)}
+.b:hover:not(:disabled){filter:brightness(1.15)}
+.b:disabled{opacity:.4;cursor:not-allowed}
+.b:focus-visible,.hb:focus-visible,#nm:focus-visible{outline:2px solid #ffb347;outline-offset:2px}
+.a0{background:#2ea043}.a1{background:#8957e5}.a2{background:#1f6feb}.a3{background:#d29922;color:#10141a}.g{background:#2ea043;padding:10px 18px}
+.ov{position:absolute;inset:0;background:rgba(7,9,13,.95);display:none;flex-direction:column;align-items:center;justify-content:center;gap:clamp(5px,1.6vh,10px);padding:10px;z-index:5;text-align:center;border-radius:10px}
+.ov.on{display:flex}
+.ov h1{font-size:clamp(18px,5.2vw,28px);color:#ffb347}
+.ov h2{font-size:clamp(15px,4.2vw,20px);color:#ffb347}
+#msg,#hd{font-size:clamp(11px,3vw,14px);color:#9fb0c0;max-width:420px}
+#nm{width:min(280px,80%);background:#1c2128;border:1px solid #373e47;border-radius:8px;color:#fff;padding:9px;font-size:15px;text-align:center}
+#hs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:min(420px,100%)}
+.hb{background:#1c2128;border:2px solid #30363d;color:#fff;border-radius:8px;padding:8px 2px;font-size:clamp(10px,2.9vw,13px);cursor:pointer}
+.hb.sel{border-color:#ffb347;background:#2a2218}
+.hb{white-space:pre-line;line-height:1.45}
+.hb:disabled{opacity:.45;cursor:not-allowed}
+#rk{font-size:clamp(10px,2.8vw,12px);color:#c9d1d9;width:min(300px,90%)}
+#rk div{display:flex;justify-content:space-between;border-bottom:1px dashed #30363d;padding:2px 0}
+#bo{display:flex;flex-direction:column;gap:8px;width:min(320px,90%)}
+@media (prefers-reduced-motion:reduce){.b{transition:none}}
+</style>
 </head>
 <body>
-
-<div class="version-tag">v1.9</div>
-
-<div class="game-card">
-  <div class="title">⚔️ O SOBREVIVENTE ⚔️</div>
-  <div class="account-level" id="account-level">Nível de Conta: 1</div>
-
-  <div class="battle-arena" id="battle-arena" style="display: none;">
-    <div class="character-sprite" id="sprite-hero">🛡️</div>
-    <div class="character-sprite" id="sprite-enemy">🥷</div>
+<div id="app">
+  <header><span id="lv"></span><span id="tt">⚔️ O SOBREVIVENTE</span><button id="mu" aria-label="Som">🔊</button></header>
+  <canvas id="cv"></canvas>
+  <div id="log" aria-live="polite"></div>
+  <div id="act">
+    <button class="b a0" id="b0">⚔️ Atacar</button>
+    <button class="b a1" id="b1">🔮 Habilidade</button>
+    <button class="b a2" id="b2">🛡️ Defender</button>
+    <button class="b a3" id="b3">🧪 Kit</button>
   </div>
-
-  <div class="status-container" id="status-container" style="display: none;">
-    <div class="status-card">
-      <h3 id="hero-name-display">Herói</h3>
-      <div class="status-info" id="hero-class-display">Guerreiro</div>
-      <div class="status-info">Vida: <span id="hero-hp">140</span>/<span id="hero-hp-max">140</span></div>
-      <div class="status-info">Kit Médico: <span id="hero-pots">3</span></div>
-    </div>
-    <div class="status-card">
-      <h3 id="enemy-name">Inimigo</h3>
-      <div class="status-info">Vida: <span id="enemy-hp">50</span></div>
-    </div>
+  <div id="menu" class="ov on">
+    <h1>⚔️ O SOBREVIVENTE ⚔️</h1>
+    <p id="msg">Sobreviva a 10 salas e derrote os 2 chefes!</p>
+    <input id="nm" maxlength="12" placeholder="Seu nome..." autocomplete="off">
+    <button class="b g" id="nx">CONTINUAR</button>
+    <div id="rk"></div>
   </div>
-
-  <div class="scoreboard" id="arcade-scoreboard">
-    <h4>🕹️ Hall da Fama (Ranking de Score)</h4>
-    <ul class="score-list" id="score-list">
-      <li><span>Nenhum recorde ainda</span> <span>0 pts</span></li>
-    </ul>
+  <div id="pick" class="ov">
+    <h2>🥷 Escolha seu ninja</h2>
+    <div id="hs"></div>
+    <p id="hd"></p>
+    <button class="b g" id="go">JOGAR</button>
   </div>
-
-  <div class="log-box" id="log-box"></div>
-
-  <div class="actions-container" id="actions-container" style="display: none;">
-    <button class="btn btn-attack" id="btn-attack" onclick="atacar()">Atacar</button>
-    <button class="btn btn-skill" id="btn-skill" onclick="usarHabilidade()">Habilidade</button>
-    <button class="btn btn-potion" id="btn-potion" onclick="usarPocao()">Kit Médico</button>
-  </div>
-
-  <div class="setup-container" id="setup-container">
-    <input type="text" id="setup-input" placeholder="Digite seu nome..." autofocus>
-    <button onclick="processarSetup()">Jogar</button>
+  <div id="buff" class="ov">
+    <h2>🎁 Sala concluída! Escolha uma recompensa</h2>
+    <div id="bo"></div>
   </div>
 </div>
-
 <script>
-  let nivelConta = 1;
-  let rankingScores = [];
-  let nomeAtualJogador = "";
+(()=>{
+const $=id=>document.getElementById(id);
+const H=[
+ {n:'Ninja do Raio',e:'⚡',hp:115,a:20,s:{n:'Lâmina de Raio',m:1.9,c:1,cd:2,d:'golpe crítico garantido'}},
+ {n:'Ninja do Fogo',e:'🔥',hp:105,a:21,s:{n:'Esfera de Fogo',m:2.6,cd:3,d:'grande dano à distância'}},
+ {n:'Ninja Curandeiro',e:'🌿',hp:150,a:17,s:{n:'Palma Curativa',m:1.2,hl:35,cd:3,d:'golpeia e cura 35 de vida'}}];
+const EN=[['Gosma','🦠',45,9],['Morcego','🦇',55,11],['Esqueleto','💀',70,13],['Goblin','👺',85,14],['Ogro (Chefe)','👹',170,17,1],
+ ['Aranha','🕷️',95,17],['Fantasma','👻',110,19],['Golem','🗿',140,21],['Demônio','😈',160,23],['Dragão (Chefe)','🐉',280,27,1]];
+let G=null,E=null,busy=0,lvl=1,sel=0,rank=[],ps=[],fx=[],L=[],mute=false;
+let A={h:{l:0,f:0,d:0,p:0},e:{l:0,f:0,d:0,p:0},sh:0};
+try{
+  lvl=Math.min(6,Math.max(1,parseInt(localStorage.getItem('rpgLv'),10)||1));
+  const r=JSON.parse(localStorage.getItem('rpgRk')||'[]');
+  if(Array.isArray(r))rank=r.filter(x=>x&&typeof x.n==='string'&&typeof x.e==='string'&&Number.isFinite(x.s)).slice(0,5);
+}catch(e){}
+function save(){try{localStorage.setItem('rpgLv',lvl);localStorage.setItem('rpgRk',JSON.stringify(rank))}catch(e){}}
 
-  let audioCtx = null;
+/* ===== SOM ===== */
+let AC,mg,mi,ni=0;
+function ac(){if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();mg=AC.createGain();mg.gain.value=.55;mg.connect(AC.destination)}if(AC.state==='suspended')AC.resume();return AC}
+function tone(f,f2,d,ty,v,t0){if(mute)return;try{const c=ac(),n=c.currentTime+(t0||0),o=c.createOscillator(),g=c.createGain();o.type=ty||'square';o.frequency.setValueAtTime(f,n);o.frequency.exponentialRampToValueAtTime(f2,n+d);g.gain.setValueAtTime(v||.15,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(g);g.connect(mg);o.start(n);o.stop(n+d)}catch(e){}}
+function noise(d,v,fr){if(mute)return;try{const c=ac(),n=c.currentTime,b=c.createBuffer(1,Math.floor(c.sampleRate*d),c.sampleRate),a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1;const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=fr;g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.001,n+d);s.connect(f);f.connect(g);g.connect(mg);s.start(n)}catch(e){}}
+const S={
+ click:()=>tone(500,700,.06,'square',.06),
+ hit:()=>{noise(.1,.3,1500);tone(200,60,.14,'sawtooth',.14)},
+ crit:()=>{noise(.18,.35,2500);tone(400,80,.25,'sawtooth',.2);tone(800,1200,.15,'square',.08,.05)},
+ hurt:()=>{noise(.15,.3,500);tone(120,40,.25,'sawtooth',.2)},
+ miss:()=>noise(.12,.1,4000),
+ heal:()=>[523,659,784].forEach((f,i)=>tone(f,f,.18,'sine',.12,i*.09)),
+ skill:()=>{tone(300,900,.3,'square',.1);noise(.25,.2,3000)},
+ win:()=>[523,659,784,1047].forEach((f,i)=>tone(f,f,.25,'triangle',.18,i*.12)),
+ lose:()=>[392,330,262,196].forEach((f,i)=>tone(f,f*.9,.35,'sawtooth',.15,i*.2))
+};
+const NT=[110,130.8,164.8,130.8,98,123.5,146.8,123.5];
+function music(){clearInterval(mi);if(mute)return;mi=setInterval(()=>{const f=NT[ni%8];tone(f,f*.99,.9,'triangle',.06);if(ni%2===0)tone(f*4,f*4,.4,'sine',.02);ni++},500)}
+$('mu').onclick=()=>{mute=!mute;$('mu').textContent=mute?'🔇':'🔊';mute?clearInterval(mi):(ac(),music())};
 
-  function initAudio() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
+/* ===== CANVAS ===== */
+const cv=$('cv'),ctx=cv.getContext('2d');let w=300,h=200,dpr=1;
+function rs(){const r=cv.getBoundingClientRect();dpr=Math.min(window.devicePixelRatio||1,2);w=Math.max(1,r.width);h=Math.max(1,r.height);cv.width=w*dpr;cv.height=h*dpr}
+window.addEventListener('resize',rs);if(window.ResizeObserver)new ResizeObserver(rs).observe(cv);rs();
+const P=()=>({hx:w*.24,ex:w*.76,gy:h*.78,sz:Math.min(w*.22,h*.36)});
+function burst(who,c,n){const p=P(),x=who==='h'?p.hx:p.ex,y=p.gy-p.sz*.45;for(let i=0;i<n;i++)ps.push({x,y,vx:(Math.random()-.5)*260,vy:-Math.random()*220,l:.7+Math.random()*.4,c,s:2+Math.random()*3})}
+function ft(who,t,c){const p=P();fx.push({x:who==='h'?p.hx:p.ex,y:p.gy-p.sz*1.1,t,c,l:1})}
+function bar(x,y,bw,v,mx,c,lb,al){ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(x,y,bw,12);ctx.fillStyle=c;ctx.fillRect(x+1,y+1,(bw-2)*Math.max(0,v/mx),10);ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';ctx.textAlign=al;ctx.fillText(lb,al==='left'?x:x+bw,y-3)}
+function spr(em,x,y,sz,a,dir,ph,t,boss){
+  ctx.save();
+  const off=mvf(a.l>0?1-a.l:-1)*GP(sz)*dir,bob=Math.sin(t/280+ph)*sz*.04;
+  ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.ellipse(x,y+sz*.05,sz*.45,sz*.1,0,0,7);ctx.fill();
+  ctx.translate(x+off,y-sz*.45+bob);
+  if(a.d){ctx.rotate(-a.p*1.5*dir);ctx.translate(0,a.p*sz*.3);ctx.globalAlpha=1-a.p*.6}
+  if(a.f>0&&((t/60)|0)%2)ctx.globalAlpha*=.35;
+  ctx.font=sz+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor=boss?'#f33':'rgba(0,0,0,.6)';ctx.shadowBlur=boss?20:8;ctx.fillText(em,0,0);ctx.restore();
+}
+/* ===== PERSONAGENS COM CORPO ===== */
+const HS=[
+ {sk:'#e0ac69',cl:'#0f766e',tr:'#134e4a',w:'dagger',hair:'#7a4a24',band:'#2563eb'},
+ {sk:'#f1c27d',cl:'#b91c1c',tr:'#450a0a',w:'star',hair:'#111',band:'#7f1d1d',cape:'#7f1d1d',glow:'#ff7a2f'},
+ {sk:'#f1c27d',cl:'#15803d',tr:'#14532d',w:'sword',hair:'#8b5a2b',band:'#166534'}];
+H.forEach((x,i)=>{x.f=HS[i]});
+const ES={'Esqueleto':{sk:'#e8e4d0',cl:'#bdb7a0',tr:'#8a846e',w:'sword',eh:'💀'},
+ 'Goblin':{sk:'#6aa84f',cl:'#6b4a2b',tr:'#3e2a17',w:'axe',eh:'👺'},
+ 'Ogro (Chefe)':{sk:'#b5543a',cl:'#4a3224',tr:'#2a1b12',w:'club',eh:'👹',s:1.2},
+ 'Golem':{sk:'#8d96a0',cl:'#6b7480',tr:'#4a525c',w:'hammer',eh:'🗿',s:1.15},
+ 'Demônio':{sk:'#c0392b',cl:'#5a1020',tr:'#2a0a12',w:'spear',eh:'😈',cape:'#3a0a18',s:1.1}};
+let pj=[],SHD=0;
+const mvf=q=>q<0?0:q<.25?q/.25:q<.7?1:(1-q)/.3;
+const GP=sz=>Math.max(0,w*.52-sz*.62);
+function fig(x,y,sz,dir,a,t,f,boss){
+  const u=sz/100*(f.s||1),q=a.l>0?1-a.l:-1,sn=q>=0?Math.sin(Math.PI*q):0,ph=t/(f.eh?330:380)+(dir<0?2:0),br=Math.sin(ph)*1.4,st=q>=0?sn*9:Math.sin(ph*.5)*1.5,rg=['bow','staff','star'].includes(f.w);
+  let ang=.9+Math.sin(ph)*.05;
+  if(q>=0)ang=rg?1.5+sn*.5:q<.3?.9+1.5*q/.3:q<.6?2.4-1.5*(q-.3)/.3:.9;
+  const wa=f.w==='staff'?3.14-sn*1.2:ang+({hammer:.8,club:.8,axe:.8,spear:1.4}[f.w]||.9);
+  ctx.save();
+  ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.ellipse(x,y+sz*.03,sz*.4,sz*.08,0,0,7);ctx.fill();
+  ctx.translate(x+mvf(q)*(rg?0:GP(sz))*dir,y);ctx.scale(dir*u,u);
+  if(a.d){ctx.rotate(-a.p*1.45);ctx.globalAlpha=1-a.p*.5}
+  if(a.f>0&&((t/60)|0)%2)ctx.globalAlpha*=.4;
+  if(dir>0&&SHD>0){
+    ctx.fillStyle='rgba(88,166,255,.14)';ctx.strokeStyle='rgba(120,190,255,'+(.65+Math.sin(t/180)*.25)+')';ctx.lineWidth=3;
+    ctx.beginPath();ctx.ellipse(6,-50,40,60,0,0,7);ctx.fill();ctx.stroke();
+    ctx.font='15px serif';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText('🛡️×'+SHD,6,-118);
   }
-
-  function tocarSom(tipo) {
-    try {
-      initAudio();
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      let osc = audioCtx.createOscillator();
-      let gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      let now = audioCtx.currentTime;
-
-      if (tipo === 'ataque') {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(140, now);
-        osc.frequency.exponentialRampToValueAtTime(30, now + 0.15);
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
-        osc.start(now);
-        osc.stop(now + 0.15);
-      } else if (tipo === 'habilidade') {
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(300, now);
-        osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-        osc.start(now);
-        osc.stop(now + 0.2);
-      } else if (tipo === 'cura') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(350, now);
-        osc.frequency.exponentialRampToValueAtTime(700, now + 0.3);
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now);
-        osc.stop(now + 0.3);
-      } else if (tipo === 'inimigo_derrotado') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(300, now);
-        osc.frequency.setValueAtTime(450, now + 0.1);
-        osc.frequency.setValueAtTime(600, now + 0.2);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
-        osc.start(now);
-        osc.stop(now + 0.35);
-      } else if (tipo === 'vitoria') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(260, now);
-        osc.frequency.setValueAtTime(390, now + 0.1);
-        osc.frequency.setValueAtTime(520, now + 0.2);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
-        osc.start(now);
-        osc.stop(now + 0.4);
-      } else if (tipo === 'derrota') {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.exponentialRampToValueAtTime(50, now + 0.4);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
-        osc.start(now);
-        osc.stop(now + 0.4);
-      }
-    } catch(e) {}
+  if(boss){ctx.shadowColor='#f33';ctx.shadowBlur=20}
+  const ln=(x1,y1,x2,y2,w,c)=>{ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()};
+  const dot=(cx,cy,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.fill()};
+  if(f.cape){ctx.fillStyle=f.cape;ctx.beginPath();ctx.moveTo(-5,-72);ctx.lineTo(-26+Math.sin(ph*2)*3-st*.5,-20);ctx.lineTo(-4,-30);ctx.lineTo(5,-70);ctx.fill()}
+  ln(-4,-38,-5-st,-3,8,f.tr);ln(4,-38,6+st,-3,8,f.tr);
+  ctx.fillStyle='#222';ctx.fillRect(-10-st,-5,10,5);ctx.fillRect(2+st,-5,11,5);
+  const bx=-3,by=-68+br*.4,ba=f.sh?.9:.35+Math.sin(ph+1)*.08,bhx=bx+26*Math.sin(ba),bhy=by+26*Math.cos(ba);
+  ln(bx,by,bhx,bhy,7,f.cl);dot(bhx,bhy,4,f.sk);
+  if(f.sh){dot(bhx+4,bhy,12,f.tr);ctx.strokeStyle='#e6b422';ctx.lineWidth=2;ctx.stroke();dot(bhx+4,bhy,3.5,'#e6b422')}
+  ctx.fillStyle=f.cl;ctx.beginPath();ctx.moveTo(-10,-72+br*.4);ctx.lineTo(11,-72+br*.4);ctx.lineTo(8,-38);ctx.lineTo(-8,-38);ctx.closePath();ctx.fill();
+  ctx.fillStyle=f.tr;ctx.fillRect(-8,-44,16,4);
+  const hy=-84-br*.3;
+  if(f.eh){ctx.font='30px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(f.eh,3,hy)}
+  else{
+    dot(3,hy,11,f.sk);
+    ctx.fillStyle=f.helm||f.hood||f.hat||f.hair;ctx.beginPath();ctx.arc(3,hy,11.5,Math.PI,0);ctx.fill();
+    if(f.hat){ctx.beginPath();ctx.moveTo(-10,hy-5);ctx.lineTo(4,hy-32);ctx.lineTo(16,hy-5);ctx.fill()}
+    ctx.fillStyle='#111';ctx.fillRect(8,hy-1,2.5,3);if(f.band){ctx.fillStyle=f.band;ctx.fillRect(-8.5,hy-7,23,4);ctx.fillStyle='#cbd5e1';ctx.fillRect(2,hy-8,7,6)}
+    if(f.halo){ctx.strokeStyle='#ffe066';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(3,hy-17,9,3,0,0,7);ctx.stroke()}
   }
-
-  let heroi = {
-    nome: "Herói",
-    classe: "Guerreiro",
-    hp: 140,
-    hpMax: 140,
-    ataque: 18,
-    pocoes: 3,
-    habilidade: "Golpe de Escudo",
-    cdHabilidade: 0,
-    golpesGastos: 0,
-    habilidadesGastas: 0,
-    sprite: "⚔️"
-  };
-
-  let inimigo = {
-    nome: "Ladrão",
-    hp: 50,
-    ataque: 12,
-    sprite: "🥷"
-  };
-
-  const inimigosDungeon = [
-    { nome: "Ladrão", hp: 50, ataque: 12, sprite: "🥷" },
-    { nome: "Trapaceiro", hp: 80, ataque: 18, sprite: "👺" },
-    { nome: "Dragão das Sombras (Chefe)", hp: 100, ataque: 28, sprite: "🐉" }
-  ];
-
-  let faseAtual = 0;
-
-  const spriteHeroElem = document.getElementById("sprite-hero");
-  const spriteEnemyElem = document.getElementById("sprite-enemy");
-
-  function atualizarPlacarHTML() {
-    document.getElementById("account-level").innerText = `Nível de Conta: ${nivelConta}`;
-    const lista = document.getElementById("score-list");
-    lista.innerHTML = "";
-    if (rankingScores.length === 0) {
-      lista.innerHTML = `<li><span>Nenhum recorde ainda</span> <span>0 pts</span></li>`;
-      return;
-    }
-    rankingScores.sort((a, b) => b.score - a.score);
-    rankingScores.forEach(item => {
-      lista.innerHTML += `<li><span>${item.nome} (${item.classe})</span> <strong>${item.score} pts</strong></li>`;
-    });
+  const sx=5,sy=-68+br*.4,hx=sx+27*Math.sin(ang),hyy=sy+27*Math.cos(ang);
+  ln(sx,sy,hx,hyy,7,f.cl);dot(hx,hyy,4,f.sk);
+  ctx.save();ctx.translate(hx,hyy);
+  if(f.w==='bow'){
+    const pull=q>=0&&q<.4;
+    ctx.strokeStyle='#8d5a2b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-24);ctx.quadraticCurveTo(pull?10:16,0,0,24);ctx.stroke();
+    ctx.strokeStyle='#ddd';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-24);ctx.lineTo(pull?-8:0,0);ctx.lineTo(0,24);ctx.stroke();
+    if(pull){ctx.strokeStyle='#e8d9a0';ctx.beginPath();ctx.moveTo(-8,0);ctx.lineTo(16,0);ctx.stroke()}
+  }else if(f.w==='star'){ctx.rotate(t/100);ctx.fillStyle='#cbd5e1';ctx.shadowColor=f.glow;ctx.shadowBlur=10;ctx.beginPath();for(let k=0;k<8;k++){const r=k%2?3:9;ctx.lineTo(Math.cos(k*Math.PI/4)*r,Math.sin(k*Math.PI/4)*r)}ctx.fill()
+  }else{
+    ctx.rotate(-wa);const w=f.w,BL={sword:42,dagger:24,rapier:52}[w];
+    if(BL){
+      ctx.fillStyle='#6b4423';ctx.fillRect(-1.5,-4,3,8);ctx.fillStyle=w==='rapier'?'#c0392b':'#e6b422';ctx.fillRect(-6,4,12,3);
+      const bw=w==='rapier'?1.3:2.5;ctx.fillStyle='#e8eef5';ctx.beginPath();ctx.moveTo(-bw,7);ctx.lineTo(bw,7);ctx.lineTo(bw*.6,BL);ctx.lineTo(0,BL+5);ctx.lineTo(-bw*.6,BL);ctx.fill();
+    }else if(w==='hammer'||w==='axe'||w==='spear'){
+      ctx.fillStyle='#7a4a24';ctx.fillRect(-1.5,-6,3,w==='spear'?60:38);
+      if(w==='hammer'){ctx.fillStyle='#9aa4af';ctx.fillRect(-9,28,18,13);ctx.fillStyle='#e6b422';ctx.fillRect(-9,32,18,3)}
+      else if(w==='axe'){ctx.fillStyle='#9aa4af';ctx.beginPath();ctx.moveTo(1.5,24);ctx.lineTo(14,18);ctx.lineTo(14,40);ctx.lineTo(1.5,34);ctx.fill()}
+      else{ctx.fillStyle='#d0d7de';ctx.beginPath();ctx.moveTo(-4,54);ctx.lineTo(0,68);ctx.lineTo(4,54);ctx.fill()}
+    }else if(w==='club'){ctx.fillStyle='#7a4a24';ctx.beginPath();ctx.moveTo(-2,-3);ctx.lineTo(2,-3);ctx.lineTo(7,42);ctx.lineTo(-7,42);ctx.fill()}
+    else{ctx.fillStyle='#8d5a2b';ctx.fillRect(-1.5,-24,3,60);ctx.shadowColor=f.glow;ctx.shadowBlur=14;dot(0,40,5.5+(q>=0?sn*3:Math.sin(ph*2)*.8),f.glow)}
   }
-
-  function calcularEAdicionarScore(venceu) {
-    let pontosVida = heroi.hp * 5;
-    let bonusVitoria = venceu ? 500 : 100;
-    let penalidadeAcoes = (heroi.golpesGastos * 5) + (heroi.habilidadesGastas * 10);
-    
-    let scoreFinal = Math.max(10, bonusVitoria + pontosVida - penalidadeAcoes);
-    
-    let indexExistente = rankingScores.findIndex(item => item.nome.toLowerCase() === heroi.nome.toLowerCase());
-    
-    if (indexExistente !== -1) {
-      rankingScores[indexExistente] = {
-        nome: heroi.nome,
-        classe: heroi.classe,
-        score: scoreFinal
-      };
-    } else {
-      rankingScores.push({
-        nome: heroi.nome,
-        classe: heroi.classe,
-        score: scoreFinal
-      });
-    }
-    
-    atualizarPlacarHTML();
-
-    log(`<br>🎮 **ESTATÍSTICAS DA PARTIDA DE ${heroi.nome.toUpperCase()}**:`);
-    log(`⚔️ Golpes normais: ${heroi.golpesGastos} | 🔮 Habilidades: ${heroi.habilidadesGastas}`);
-    log(`🏆 **SCORE FINAL: ${scoreFinal} PONTOS**`);
-  }
-
-  function log(mensagem) {
-    const logBox = document.getElementById("log-box");
-    logBox.innerHTML += (logBox.innerHTML ? "<br>" : "") + mensagem;
-    logBox.scrollTop = logBox.scrollHeight;
-  }
-
-  function atualizarTela() {
-    document.getElementById("hero-name-display").innerText = heroi.nome;
-    document.getElementById("hero-class-display").innerText = heroi.classe;
-    document.getElementById("hero-hp").innerText = heroi.hp;
-    document.getElementById("hero-hp-max").innerText = heroi.hpMax;
-    document.getElementById("hero-pots").innerText = heroi.pocoes;
-    document.getElementById("enemy-name").innerText = inimigo.nome;
-    document.getElementById("enemy-hp").innerText = inimigo.hp;
-
-    spriteHeroElem.innerText = heroi.sprite;
-    spriteEnemyElem.innerText = inimigo.sprite;
-
-    const btnSkill = document.getElementById("btn-skill");
-    btnSkill.innerText = `${heroi.habilidade}${heroi.cdHabilidade > 0 ? ` (${heroi.cdHabilidade})` : ''}`;
-    btnSkill.disabled = (heroi.cdHabilidade > 0);
-  }
-
-  function iniciarJogoComNome(nomeFornecido) {
-    nomeAtualJogador = nomeFornecido;
-    heroi.nome = nomeFornecido;
-
-    // SELEÇÃO AUTOMÁTICA DO HERÓI MAIS FORTE COM BASE NO NÍVEL DA CONTA ATUAL
-    if (nivelConta >= 4) {
-      heroi.classe = "Mestre";
-      heroi.hp = 150; heroi.hpMax = 150; heroi.ataque = 32;
-      heroi.habilidade = "Bola de Fogo";
-      heroi.sprite = "🧙‍♂️🔥";
-    } else if (nivelConta === 3) {
-      heroi.classe = "Elite";
-      heroi.hp = 130; heroi.hpMax = 130; heroi.ataque = 26;
-      heroi.habilidade = "Espada de Ouro";
-      heroi.sprite = "🥷✨";
-    } else if (nivelConta === 2) {
-      heroi.classe = "Soldado";
-      heroi.hp = 120; heroi.hpMax = 120; heroi.ataque = 20;
-      heroi.habilidade = "Golpe de Escudo";
-      heroi.sprite = "🪖";
-    } else {
-      heroi.classe = "Guerreiro";
-      heroi.hp = 140; heroi.hpMax = 140; heroi.ataque = 18;
-      heroi.habilidade = "Golpe de Escudo";
-      heroi.sprite = "🛡️";
-    }
-
-    heroi.pocoes = 3;
-    heroi.cdHabilidade = 0;
-    heroi.golpesGastos = 0;
-    heroi.habilidadesGastas = 0;
-    faseAtual = 0;
-
-    log(`✨ ${heroi.nome} entrou na Masmorra! 🚀 Herói Automático: **${heroi.classe.toUpperCase()}** (Nível de Conta: ${nivelConta})`);
-    iniciarCombate();
-  }
-
-  function iniciarCombate() {
-    if (faseAtual >= inimigosDungeon.length) {
-      log(`<br>========================================`);
-      log(`🏆 PARABÉNS! ${heroi.nome}, VOCÊ ZEROU A MASMORRA!`);
-      
-      tocarSom('vitoria');
-      calcularEAdicionarScore(true);
-
-      // Sobe o nível da conta cumulativamente ao zerar a masmorra (máximo 4)
-      if (nivelConta < 4) {
-        nivelConta++;
-        let personagensNomes = ["", "Guerreiro", "Soldado", "Elite", "Mestre"];
-        log(`🎉 **NÍVEL DE CONTA SUBIU PARA ${nivelConta}!** Novo Herói Desbloqueado: **${personagensNomes[nivelConta].toUpperCase()}**`);
-        log(`🔄 **A reiniciar automaticamente com o mesmo jogador (${nomeAtualJogador}) e o novo herói!**`);
-        
-        atualizarPlacarHTML();
-        log(`========================================`);
-
-        // AUTOMÁTICO: Reinicia imediatamente com o mesmo nome após 2.5 segundos, sem pedir nome de novo!
-        setTimeout(() => {
-          iniciarJogoComNome(nomeAtualJogador);
-        }, 2500);
-        return;
-      } else {
-        log(`👑 **VOCÊ JÁ ESTÁ NO NÍVEL MÁXIMO DA CONTA (MESTRE)!**`);
-      }
-
-      atualizarPlacarHTML();
-      log(`========================================`);
-      
-      // Se já estiver no nível máximo e zerar, permite trocar de jogador
-      document.getElementById("actions-container").style.display = "none";
-      document.getElementById("setup-container").style.display = "flex";
-      document.getElementById("arcade-scoreboard").style.display = "block";
-      document.getElementById("setup-input").placeholder = "Próximo jogador (digite o nome)...";
-      faseAtual = 0;
-      
-      spriteHeroElem.innerText = "👑";
-      spriteEnemyElem.classList.add("anim-defeat");
-      return;
-    }
-
-    let dadosInimigo = inimigosDungeon[faseAtual];
-    inimigo.nome = dadosInimigo.nome;
-    inimigo.hp = dadosInimigo.hp;
-    inimigo.ataque = dadosInimigo.ataque;
-    inimigo.sprite = dadosInimigo.sprite;
-
-    spriteEnemyElem.classList.remove("anim-defeat");
-    spriteHeroElem.classList.remove("anim-defeat");
-
-    log(`<br>----------------------------------------`);
-    log(`🚪 Entrando na Sala ${faseAtual + 1}...`);
-    log(`⚠️ Um ${inimigo.nome} selvagem apareceu para o combate!`);
-
-    document.getElementById("setup-container").style.display = "none";
-    document.getElementById("status-container").style.display = "flex";
-    document.getElementById("battle-arena").style.display = "flex";
-    document.getElementById("actions-container").style.display = "flex";
-    document.getElementById("arcade-scoreboard").style.display = "none";
-    
-    document.getElementById("btn-attack").disabled = false;
-    document.getElementById("btn-potion").disabled = false;
-
-    atualizarTela();
-  }
-
-  function processarSetup() {
-    const input = document.getElementById("setup-input");
-    let valor = input.value.trim();
-    input.value = "";
-
-    if (!valor) return;
-    iniciarJogoComNome(valor);
-  }
-
-  function animarAcao(atacante, alvo, tipo = "ataque") {
-    const elemAtacante = atacante === "heroi" ? spriteHeroElem : spriteEnemyElem;
-    const elemAlvo = alvo === "inimigo" ? spriteEnemyElem : spriteHeroElem;
-
-    if (tipo === "ataque") {
-      elemAtacante.classList.add(atacante === "heroi" ? "anim-attack-hero" : "anim-attack-enemy");
-      setTimeout(() => {
-        elemAtacante.classList.remove("anim-attack-hero", "anim-attack-enemy");
-        elemAlvo.classList.add("anim-hit");
-        setTimeout(() => elemAlvo.classList.remove("anim-hit"), 600);
-      }, 400);
-    } else if (tipo === "cura") {
-      elemAtacante.classList.add("anim-heal");
-      setTimeout(() => elemAtacante.classList.remove("anim-heal"), 800);
-    }
-  }
-
-  function contraAtaqueInimigo() {
-    animarAcao("inimigo", "heroi", "ataque");
-    tocarSom('ataque');
-
-    setTimeout(() => {
-      let danoInimigo = Math.floor(Math.random() * 5) + (inimigo.ataque - 2);
-      heroi.hp = Math.max(0, heroi.hp - danoInimigo);
-      log(`💥 O ${inimigo.nome} contra-atacou e tirou ${danoInimigo} de vida!`);
-
-      if (heroi.cdHabilidade > 0) heroi.cdHabilidade--;
-
-      if (heroi.hp === 0) {
-        log(`💀 Você foi derrotado na masmorra... Fim de jogo.`);
-        tocarSom('derrota');
-        spriteHeroElem.classList.add("anim-defeat");
-        spriteHeroElem.innerText = "😵";
-        calcularEAdicionarScore(false);
-        
-        // Em caso de derrota, aí sim abre o input para permitir um novo jogador digitar o nome
-        document.getElementById("actions-container").style.display = "none";
-        document.getElementById("setup-container").style.display = "flex";
-        document.getElementById("arcade-scoreboard").style.display = "block";
-        document.getElementById("setup-input").placeholder = "Próximo jogador (digite o nome)...";
-        faseAtual = 0;
-      }
-
-      atualizarTela();
-    }, 400);
-  }
-
-  function atacar() {
-    if (heroi.hp <= 0 || inimigo.hp <= 0) return;
-
-    heroi.golpesGastos++;
-    animarAcao("heroi", "inimigo", "ataque");
-    tocarSom('ataque');
-
-    setTimeout(() => {
-      let danoHeroi = Math.floor(Math.random() * 6) + (heroi.ataque - 3);
-      inimigo.hp = Math.max(0, inimigo.hp - danoHeroi);
-      log(`🗡️ Você causou ${danoHeroi} de dano ao ${inimigo.nome}!`);
-
-      if (inimigo.hp === 0) {
-        log(`🏆 Você derrotou o ${inimigo.nome} com sucesso!`);
-        tocarSom('inimigo_derrotado');
-        spriteEnemyElem.classList.add("anim-defeat");
-        spriteEnemyElem.innerText = "💫";
-        faseAtual++;
-        setTimeout(iniciarCombate, 1600);
-        atualizarTela();
-        return;
-      }
-
-      contraAtaqueInimigo();
-    }, 400);
-  }
-
-  function usarHabilidade() {
-    if (heroi.hp <= 0 || inimigo.hp <= 0 || heroi.cdHabilidade > 0) return;
-
-    heroi.habilidadesGastas++;
-    animarAcao("heroi", "inimigo", "ataque");
-    tocarSom('habilidade');
-
-    setTimeout(() => {
-      let danoEspecial = 0;
-
-      if (heroi.habilidade === "Golpe de Escudo") {
-        danoEspecial = heroi.ataque + 8;
-        inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
-        log(`🛡️💥 Você desferiu um GOLPE DE ESCUDO e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
-        heroi.cdHabilidade = 2;
-      } else if (heroi.habilidade === "Espada de Ouro") {
-        danoEspecial = heroi.ataque + 18;
-        inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
-        log(`⚔️✨ VOCÊ USOU A ESPADA DE OURO! Causou ${danoEspecial} de dano crítico ao ${inimigo.nome}!`);
-        heroi.cdHabilidade = 3;
-      } else if (heroi.habilidade === "Bola de Fogo") {
-        danoEspecial = heroi.ataque + 28;
-        inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
-        log(`🔥 DESTRUIÇÃO! Você lançou uma BOLA DE FOGO e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
-        heroi.cdHabilidade = 3;
-      } else {
-        danoEspecial = heroi.ataque + 12;
-        inimigo.hp = Math.max(0, inimigo.hp - danoEspecial);
-        log(`✨ Você usou Impacto Mágico e causou ${danoEspecial} de dano ao ${inimigo.nome}!`);
-        heroi.cdHabilidade = 2;
-      }
-
-      if (inimigo.hp === 0) {
-        log(`🏆 Você derrotou o ${inimigo.nome} com sucesso!`);
-        tocarSom('inimigo_derrotado');
-        spriteEnemyElem.classList.add("anim-defeat");
-        spriteEnemyElem.innerText = "💫";
-        faseAtual++;
-        setTimeout(iniciarCombate, 1600);
-        atualizarTela();
-        return;
-      }
-
-      contraAtaqueInimigo();
-    }, 400);
-  }
-
-  function usarPocao() {
-    if (heroi.hp <= 0 || inimigo.hp <= 0) return;
-
-    if (heroi.pocoes > 0) {
-      animarAcao("heroi", "heroi", "cura");
-      tocarSom('cura');
-      let cura = 65;
-      heroi.hp = Math.min(heroi.hpMax, heroi.hp + cura);
-      heroi.pocoes--;
-      log(`🧪 Você usou um Kit Médico e recuperou ${cura} de vida!`);
-    } else {
-      log(`❌ Você não tem mais Kit Médico!`);
-      return;
-    }
-
-    contraAtaqueInimigo();
-  }
-
-  document.getElementById("setup-input").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") processarSetup();
+  ctx.restore();ctx.restore();
+}
+let last=0;
+function draw(t){
+  const dt=Math.min(.05,(t-last)/1000||.016);last=t;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const p=P(),room=G?G.r:1,hue=(250-room*16+360)%360;
+  ctx.save();
+  if(A.sh>.3){ctx.translate((Math.random()-.5)*A.sh,(Math.random()-.5)*A.sh);A.sh*=.88}else A.sh=0;
+  let g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'hsl('+hue+',40%,9%)');g.addColorStop(1,'hsl('+hue+',45%,17%)');
+  ctx.fillStyle=g;ctx.fillRect(-20,-20,w+40,h+40);
+  ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=1;ctx.beginPath();
+  const bh=h*.1;for(let r=0,y=0;y<p.gy;y+=bh,r++){ctx.moveTo(0,y);ctx.lineTo(w,y);for(let x=(r%2)*w*.06;x<w;x+=w*.12){ctx.moveTo(x,y);ctx.lineTo(x,y+bh)}}ctx.stroke();
+  [.07,.93].forEach((q,i)=>{
+    const fl=.8+Math.sin(t/90+i*2)*.2+Math.random()*.08,tx=w*q,ty=h*.24;
+    const rg=ctx.createRadialGradient(tx,ty,2,tx,ty,w*.3*fl);rg.addColorStop(0,'rgba(255,170,60,.35)');rg.addColorStop(1,'rgba(255,170,60,0)');
+    ctx.fillStyle=rg;ctx.fillRect(0,0,w,h);ctx.font=(p.sz*.4*fl)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🔥',tx,ty);
   });
+  g=ctx.createLinearGradient(0,p.gy,0,h);g.addColorStop(0,'hsl('+hue+',30%,14%)');g.addColorStop(1,'hsl('+hue+',30%,6%)');
+  ctx.fillStyle=g;ctx.fillRect(0,p.gy,w,h-p.gy);
+  ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(0,p.gy,w,2);
+  if(G&&E){
+    for(const k of ['h','e']){const a=A[k];a.l=Math.max(0,a.l-dt*1.7);a.f=Math.max(0,a.f-dt*2.5);if(a.d)a.p=Math.min(1,a.p+dt*1.5)}
+    SHD=G.def;fig(p.hx,p.gy,p.sz,1,A.h,t,G.h.f,0);
+    if(ES[E.n])fig(p.ex,p.gy,E.b?p.sz*1.1:p.sz,-1,A.e,t,ES[E.n],E.b);
+    else spr(E.e,p.ex,p.gy,E.b?p.sz*1.35:p.sz,A.e,-1,2,t,E.b);
+    const bw=Math.min(w*.42,190);
+    bar(8,24,bw,G.hp,G.mx,'#3fb950',G.n+'  '+G.hp+'/'+G.mx,'left');
+    bar(w-8-bw,24,bw,E.hp,E.mx,'#f85149',E.n+'  '+E.hp,'right');
+    ctx.fillStyle='#ffb347';ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.fillText('Sala '+G.r+'/10  •  '+G.sc+' pts',w/2,14);
+  }
+  for(let i=pj.length-1;i>=0;i--){
+    const q=pj[i];q.t+=dt/.2;if(q.t>=1){pj.splice(i,1);continue}
+    const px=p.hx+p.sz*.5+(p.ex-p.hx-p.sz*.7)*q.t,py=p.gy-p.sz*.62;
+    ctx.shadowColor=q.c;ctx.shadowBlur=12;ctx.strokeStyle=q.c;ctx.lineWidth=q.a?2:7;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(px-(q.a?24:8),py);ctx.lineTo(px,py);ctx.stroke();ctx.shadowBlur=0;
+  }
+  for(let i=ps.length-1;i>=0;i--){const q=ps[i];q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=420*dt;q.l-=dt;if(q.l<=0){ps.splice(i,1);continue}ctx.globalAlpha=Math.min(1,q.l*2);ctx.fillStyle=q.c;ctx.fillRect(q.x,q.y,q.s,q.s)}
+  ctx.globalAlpha=1;
+  for(let i=fx.length-1;i>=0;i--){const q=fx[i];q.y-=42*dt;q.l-=dt*.9;if(q.l<=0){fx.splice(i,1);continue}ctx.globalAlpha=Math.min(1,q.l*1.6);ctx.font='bold '+Math.round(p.sz*.28)+'px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#000';ctx.strokeText(q.t,q.x,q.y);ctx.fillStyle=q.c;ctx.fillText(q.t,q.x,q.y)}
+  ctx.globalAlpha=1;ctx.restore();
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
 
-  // Inicialização
-  atualizarPlacarHTML();
-  log("========================================");
-  log("        ⚔️ O SOBREVIVENTE ⚔️");
-  log("========================================");
-  log("Digite o nome do seu herói:");
+/* ===== LOG / UI ===== */
+function log(m){L.push(m);if(L.length>3)L.shift();const b=$('log');b.textContent='';L.forEach(x=>{const d=document.createElement('div');d.textContent=x;b.appendChild(d)})}
+function ui(){
+  $('lv').textContent='Nível de Conta: '+lvl;
+  if(!G)return;
+  const dead=G.hp<=0||E.hp<=0;
+  $('b0').disabled=busy||dead;
+  $('b1').disabled=busy||dead;$('b1').textContent='🔮 '+G.h.s.n+(G.cd>0?' ('+G.cd+')':'');
+  $('b2').disabled=busy||dead;
+  $('b3').disabled=busy||dead||G.k<1;$('b3').textContent='🧪 Kit ('+G.k+')';
+}
+function pickui(){
+  const g=$('hs');g.textContent='';
+  H.forEach((x,i)=>{const b=document.createElement('button');b.className='hb'+(i===sel?' sel':'');b.textContent=x.e+' '+x.n+'\n❤️'+x.hp+'  ⚔️'+x.a;b.onclick=()=>{sel=i;S.click();pickui()};g.appendChild(b)});
+  $('hd').textContent='✨ '+H[sel].s.n+': '+H[sel].s.d;
+}
+function menu(){
+  G=null;E=null;$('pick').classList.remove('on');
+  const r=$('rk');r.textContent='';
+  if(!rank.length){const d=document.createElement('div');d.textContent='Nenhum recorde ainda';r.appendChild(d)}
+  rank.forEach((q,i)=>{const d=document.createElement('div'),a=document.createElement('span'),b=document.createElement('b');a.textContent=(i+1)+'. '+q.n+' '+q.e;b.textContent=q.s+' pts';d.append(a,b);r.appendChild(d)});
+  $('lv').textContent='Nível de Conta: '+lvl;$('menu').classList.add('on');
+}
+
+/* ===== COMBATE ===== */
+function next(){
+  const d=EN[G.r-1];
+  E={n:d[0],e:d[1],hp:d[2],mx:d[2],a:d[3],b:!!d[4],t:0};
+  A={h:{l:0,f:0,d:0,p:0},e:{l:0,f:0,d:0,p:0},sh:0};
+  G.def=0;busy=0;
+  log('🚪 Sala '+G.r+': '+E.n+' apareceu!');
+  if(E.b)log('👑 Chefe! Ele dá um golpe pesado a cada 3 turnos.');
+  ui();
+}
+function strike(m,fc,n,after){
+  let tot=0;
+  for(let i=0;i<n;i++)setTimeout(()=>{
+    A.h.l=1;const f=G.h.f;
+    if(['bow','staff','star'].includes(f.w))pj.push({c:f.glow||'#e8d9a0',a:f.w==='bow',t:0});
+    setTimeout(()=>{
+    if(!fc&&Math.random()<.07){ft('e','Errou!','#9aa');S.miss()}
+    else{
+      let d=Math.round(G.a*m*(.85+Math.random()*.3));const c=fc||Math.random()<.15;
+      if(c)d=Math.round(d*1.8);
+      E.hp=Math.max(0,E.hp-d);tot+=d;A.e.f=1;A.sh=c?12:5;
+      burst('e',c?'#ffd23f':'#ff5a5a',c?24:12);ft('e',(c?'💥':'')+d,c?'#ffd23f':'#fff');c?S.crit():S.hit();
+    }
+    if(i===n-1){log('🗡️ '+G.n+' causou '+tot+' de dano em '+E.n+'.');if(after)after(tot)}
+    },260);
+  },i*220+120);
+}
+function healFx(v){const o=G.hp;G.hp=Math.min(G.mx,G.hp+v);if(G.hp>o){ft('h','+'+(G.hp-o),'#4ade80');burst('h','#4ade80',10);S.heal()}}
+function end(ms){setTimeout(()=>{if(E.hp<=0)win();else foe()},ms)}
+function act(t){
+  if(busy||!G||G.hp<=0||E.hp<=0)return;
+  if(t===1&&G.cd>0){log('⏳ Habilidade recarregando ('+G.cd+')');S.miss();return}
+  if(t===3&&G.k<1){log('❌ Sem Kit Médico!');S.miss();return}
+  busy=1;ui();const s=G.h.s;
+  if(t===0){strike(1,0,1);end(900)}
+  else if(t===1){
+    G.cd=s.cd+1;S.skill();const n=s.h||1;
+    strike(s.m*G.sm,!!s.c,n,tot=>{if(s.l)healFx(Math.round(tot*.7));if(s.hl)healFx(s.hl)});
+    end(n*220+800);
+  }else if(t===2){G.def=2;log('🛡️ '+G.n+' ergue o escudo: bloqueia os próximos 2 golpes por completo!');S.click();ft('h','🛡️','#58a6ff');end(600)}
+  else{G.k--;log('🧪 Kit Médico usado!');healFx(70);end(700)}
+}
+function foe(){
+  E.t++;A.e.l=1;
+  setTimeout(()=>{
+    const heavy=E.b&&E.t%3===0;
+    let d=Math.round(E.a*(heavy?1.7:1)*(.85+Math.random()*.3));
+    const gd=G.def>0;
+    if(!heavy&&Math.random()<.07){ft('h','Esquivou!','#9cf');S.miss();log('💨 Você esquivou do ataque de '+E.n+'!')}
+    else if(gd){G.def--;ft('h','🛡️ Bloqueou!','#58a6ff');burst('h','#58a6ff',14);S.click();A.sh=3;log('🛡️ O escudo bloqueou o golpe de '+E.n+'! Restam '+G.def+' proteção(ões).')}
+    else{G.hp=Math.max(0,G.hp-d);A.h.f=1;A.sh=heavy?14:6;burst('h','#ff5a5a',12);ft('h','-'+d,'#ff7b7b');S.hurt();log((heavy?'💢 Golpe pesado! ':'💥 ')+E.n+' causou '+d+' de dano.')}
+    if(G.cd>0)G.cd--;
+    if(G.hp<=0){A.h.d=1;log('💀 Você foi derrotado...');return fin(0)}
+    if(E.b&&(E.t+1)%3===0)log('⚠️ '+E.n+' carrega um golpe pesado! Defenda!');
+    busy=0;ui();
+  },360);
+}
+function win(){
+  A.e.d=1;S.win();G.sc+=100*G.r+G.hp*2;busy=1;log('🏆 '+E.n+' derrotado!');ui();
+  setTimeout(()=>{
+    if(G.r>=10)return fin(1);
+    G.hp=Math.min(G.mx,G.hp+Math.round(G.mx*.25));if(E.b)G.k++;
+    showBuff();
+  },1200);
+}
+function showBuff(){
+  const P2=[['⚔️ +15% de ataque',()=>{G.a=Math.round(G.a*1.15)}],['❤️ +25 de vida máxima',()=>{G.mx+=25;G.hp=Math.min(G.mx,G.hp+25)}],['🧪 +1 Kit Médico',()=>{G.k++}],['🔮 Habilidade +20% de dano',()=>{G.sm*=1.2}]].sort(()=>Math.random()-.5).slice(0,3);
+  const o=$('bo');o.textContent='';
+  P2.forEach(p=>{const b=document.createElement('button');b.className='b g';b.textContent=p[0];b.onclick=()=>{p[1]();$('buff').classList.remove('on');S.heal();G.r++;next()};o.appendChild(b)});
+  $('buff').classList.add('on');
+}
+function fin(v){
+  busy=1;const s=G.sc+(v?1000:0);
+  if(!v)S.lose();
+  rank.push({n:G.n,e:G.h.e,s});rank.sort((a,b)=>b.s-a.s);rank=rank.slice(0,5);
+  let m=v?'🏆 Vitória! '+s+' pontos.':'💀 Derrotado na sala '+G.r+'. '+s+' pontos.';
+  if(v&&lvl<6){lvl++;m+=' Nível de conta '+lvl+': +5% de vida e ataque!'}
+  save();
+  setTimeout(()=>{$('msg').textContent=m;menu()},1600);
+}
+
+/* ===== EVENTOS ===== */
+['b0','b1','b2','b3'].forEach((id,i)=>{$(id).onclick=()=>act(i)});
+$('nx').onclick=()=>{ac();S.click();$('menu').classList.remove('on');pickui();$('pick').classList.add('on')};
+$('go').onclick=()=>{
+  ac();S.click();
+  const bn=1+.05*(lvl-1),n=$('nm').value.replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,12)||'Herói',x=H[sel];
+  G={n,h:x,hp:Math.round(x.hp*bn),mx:Math.round(x.hp*bn),a:Math.round(x.a*bn),k:3,cd:0,def:0,sm:1,sc:0,r:1};
+  ps=[];fx=[];L=[];$('pick').classList.remove('on');next();music();
+};
+$('nm').addEventListener('keydown',e=>{if(e.key==='Enter')$('nx').click()});
+document.addEventListener('keydown',e=>{
+  if($('menu').classList.contains('on')||$('pick').classList.contains('on')||$('buff').classList.contains('on'))return;
+  if(/^[1-4]$/.test(e.key))act(+e.key-1);
+});
+menu();log('Escolha seu herói e digite seu nome.');
+})();
 </script>
-
 </body>
 </html>

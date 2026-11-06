@@ -82,6 +82,19 @@ header{position:relative;z-index:10;display:grid;grid-template-columns:1fr auto 
 .mi{font-family:inherit}
 a.mi{text-decoration:none;display:block}
 #ts{position:absolute;left:50%;bottom:calc(max(6px,env(safe-area-inset-bottom)) + 100px);transform:translateX(-50%);background:#1f2630;color:#fff;border:1px solid #373e47;padding:10px 16px;border-radius:999px;font-size:14px;z-index:20;box-shadow:0 6px 18px rgba(0,0,0,.5);max-width:90%;text-align:center}
+/* progresso de nível, versão e confirmação */
+.pb{height:8px;background:#1f2630;border-radius:99px;overflow:hidden;margin-top:6px;min-width:120px}
+.pb i{display:block;height:100%;width:0;background:linear-gradient(90deg,#fbbf24,#f97316);border-radius:99px;transition:width .4s}
+#mw small,.who small{display:block;font-size:11.5px;color:#9fb0c0;margin-top:4px}
+#md{color:#ff8b8b}
+.rd{background:linear-gradient(#f87171,#b91c1c);--d:#7f1d1d}
+#cf{z-index:15;background:rgba(7,9,13,.78)}
+#cfc{max-width:340px}
+#cfe{font-size:44px;line-height:1}
+#cfx{font-size:14px;line-height:1.5;color:#d3dde8}
+#cfb{display:flex;gap:10px;width:100%}
+#cfb .b{flex:1}
+#ver{position:fixed;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 3px);font:600 10px 'Rajdhani',system-ui,sans-serif;letter-spacing:.5px;opacity:.33;color:#cbd5e1;pointer-events:none;z-index:30}
 /* tutorial e abas */
 #tue{font-size:clamp(54px,16vw,80px);line-height:1}
 #tut{font-size:clamp(20px,5.6vw,26px);color:#ffb347;font-weight:800}
@@ -127,7 +140,7 @@ a.mi{text-decoration:none;display:block}
 <div id="app">
   <header><button id="mn" aria-label="Menu">☰</button><span id="tt">⚔️ O SOBREVIVENTE</span><button id="mu" aria-label="Som">🔊</button></header>
   <div id="dm" class="hid">
-    <div id="mw" class="hid"><span id="mwn"></span></div>
+    <div id="mw" class="hid"><span id="mwn"></span><div class="pb"><i id="pbf"></i></div><small id="pbt"></small></div>
     <button type="button" class="mi hid" id="mc2">▶ Continuar</button>
     <button type="button" class="mi" id="mp">🏆 Placares</button>
     <button type="button" class="mi" id="mh">📖 Como jogar</button>
@@ -136,6 +149,7 @@ a.mi{text-decoration:none;display:block}
     <button type="button" class="mi hid" id="mr">🔄 Começar do início</button>
     <button type="button" class="mi hid" id="mq">🚪 Desistir e sair</button>
     <button type="button" class="mi hid" id="mo">🔓 Sair da conta</button>
+    <button type="button" class="mi hid" id="md">🗑️ Apagar conta</button>
   </div>
   <canvas id="cv"></canvas>
   <div id="act">
@@ -154,7 +168,7 @@ a.mi{text-decoration:none;display:block}
       </div>
       <div id="ai" class="hid">
         <div class="av"><span id="avl"></span><img id="avi" class="hid" alt="" referrerpolicy="no-referrer"></div>
-        <div class="who"><span id="an"></span><span id="ab"></span></div>
+        <div class="who"><span id="an"></span><span id="ab"></span><div class="pb"><i id="pbf2"></i></div><small id="pbt2"></small></div>
       </div>
     </div>
     <input id="nm" maxlength="12" placeholder="Seu nome..." autocomplete="off">
@@ -209,12 +223,20 @@ a.mi{text-decoration:none;display:block}
     <div id="tue"></div><div id="tut"></div><p id="tux"></p><div id="tud"></div>
     <div id="tub"><button class="b a3" id="tus">PULAR</button><button class="b g" id="tun">PRÓXIMO</button></div>
   </div>
+  <div id="cf" class="ov">
+    <div class="card" id="cfc">
+      <div id="cfe">⚠️</div><h2>Apagar a conta?</h2>
+      <p id="cfx">Isso vai apagar todos os seus dados: nível, progresso, recorde e vitórias nos duelos. Não dá para desfazer.</p>
+      <div id="cfb"><button class="b a3" id="cfn">CANCELAR</button><button class="b rd" id="cfy">SIM, APAGAR</button></div>
+    </div>
+  </div>
   <div id="ts" class="hid"></div>
   <div id="buff" class="ov">
     <h2>🎁 Sala concluída! Escolha uma recompensa</h2>
     <div id="bo"></div>
   </div>
 </div>
+<div id="ver"></div>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js" crossorigin="anonymous"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -252,6 +274,7 @@ const ICE=[
  {urls:'stun:global.stun.twilio.com:3478'},
  {urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}
 ].concat(TURN_EXTRA);
+const VER='2.0.0'; // mude este número a cada atualização: ele aparece no cantinho da tela
 const IDLE=5; // segundos parado antes do inimigo atacar (ou de perder a vez no online)
 
 const H=[
@@ -272,18 +295,19 @@ const RM=[
  {hp:280,a:27,b:1,l:['Dragão (Chefe)','Tiranossauro (Chefe)','Kraken (Chefe)']}];
 let PV=null,PR=null,TM=30,live=0,G=null,E=null,busy=0,lvl=1,sel=0,rank=[],ps=[],fx=[],L=[],mute=false,ID=IDLE,pend=[],TOP=[],SUBP=null,RQ=0;
 let A={h:{l:0,f:0,d:0,p:0},e:{l:0,f:0,d:0,p:0},sh:0};
-let FBON=false,AU=null,USER=null,myBest=0,PZ=0,CDS=null,TAB='s',TUT=0,TOPD=[],TGS='',VX=[];
+let FBON=false,AU=null,USER=null,myBest=0,PZ=0,CDS=null,TAB='s',TUT=0,TOPD=[],TGS='',VX=[],WN=0;
 const okE=x=>x&&typeof x.n==='string'&&typeof x.e==='string'&&Number.isFinite(x.s);
 const okD=x=>x&&typeof x.n==='string'&&typeof x.e==='string'&&Number.isFinite(x.w)&&Number.isFinite(x.g);
 try{
   lvl=Math.min(6,Math.max(1,parseInt(localStorage.getItem('rpgLv'),10)||1));
+  WN=Math.min(9,Math.max(0,parseInt(localStorage.getItem('rpgWn'),10)||0));
   const r=JSON.parse(localStorage.getItem('rpgRk')||'[]');
   if(Array.isArray(r))rank=r.filter(okE).slice(0,10);
   const p=JSON.parse(localStorage.getItem('rpgPd')||'[]');
   if(Array.isArray(p))pend=p.filter(okE).slice(-5);
 }catch(e){}
 try{TUT=localStorage.getItem('rpgTut')==='1'?1:0}catch(e){}
-function save(){try{localStorage.setItem('rpgLv',lvl);localStorage.setItem('rpgRk',JSON.stringify(rank));localStorage.setItem('rpgPd',JSON.stringify(pend))}catch(e){}}
+function save(){try{localStorage.setItem('rpgLv',lvl);localStorage.setItem('rpgWn',WN);localStorage.setItem('rpgRk',JSON.stringify(rank));localStorage.setItem('rpgPd',JSON.stringify(pend))}catch(e){}}
 
 /* ===== SOM ===== */
 let AC,mg,mi,ni=0;
@@ -335,7 +359,7 @@ function rs(){
   if(cv.width!==nw||cv.height!==nh){cv.width=nw;cv.height=nh;bgk=''}
 }
 window.addEventListener('resize',rs);if(window.ResizeObserver)new ResizeObserver(rs).observe(cv);rs();
-const P=()=>({hx:w*.24,ex:w*.76,gy:h*.78,sz:Math.min(w*.27,h*.43)});
+const P=()=>({hx:w*.24,ex:w*.76,gy:h*.78,sz:Math.min(w*.27,h*.43)*1.1});
 function vflash(c,a,d){VX.push({k:'fl',c,a,d,t:0})}
 function vring(x,y,c,r0,r1,d,lw,delay){VX.push({k:'ring',x,y,c,r0,r1,d,lw,t:-(delay||0)})}
 function skillFx(hi,who){VX.push({k:['bolt','fire','heal'][hi]||'fire',who,t:0})}
@@ -392,9 +416,81 @@ const ES={
  'Tiranossauro (Chefe)':mk('🦖','#6aa84a','#3e7a2e','#2a5420','club',{s:1.25}),
  'Kraken (Chefe)':mk('🦑','#c8507a','#8a2a50','#5a1a38','staff',{glow:'#ff7ab0',s:1.25})
 };
+const HDS={
+ 'Vírus':{k:'blob',c2:'#a3e635'},
+ 'Rato Gigante':{k:'b',c2:'#c9bfb5',ear:[-5,-9,5,'r'],sn:[10,2],no:'#f9a8d4'},
+ 'Cobra':{k:'sn',c2:'#d9f99d'},
+ 'Morcego':{k:'b',c2:'#2a1f3a',ear:[-4,-9,5,'p'],ec:'#f43f5e',er:2.2,tt:2,th:6},
+ 'Lobo':{k:'b',c2:'#cfd3da',ear:[-3,-8,5,'p'],sn:[11,4],ec:'#fde047',er:2,tt:2,th:7},
+ 'Escorpião':{k:'bg',c2:'#7a3a10'},
+ 'Esqueleto':{k:'sk'},
+ 'Zumbi':{k:'zb'},
+ 'Vampiro':{k:'vp'},
+ 'Goblin':{k:'gb'},
+ 'Bruxa':{k:'wi'},
+ 'Alienígena':{k:'al',c2:'#7dff9a'},
+ 'Ogro (Chefe)':{k:'b',hw:12,hh:11,hn:[-4,8,'#e7dcc0'],bw:1,tk:1,ec:'#fde047',er:1.8,ear:[-8,-1,3.5,'r']},
+ 'Rei Caveira (Chefe)':{k:'sk',g:1,cr:1},
+ 'Gorila Alfa (Chefe)':{k:'b',hw:11.5,hh:10,mz:'#8a7466',bw:1,c2:'#2e2822',ear:[-2,-9,5,'r'],ec:'#fff',er:1.5},
+ 'Aranha':{k:'bg',c2:'#7f1d1d',n:6},
+ 'Robô':{k:'rb'},
+ 'Polvo':{k:'oc',c2:'#f9a8d4'},
+ 'Fantasma':{k:'gh'},
+ 'Palhaço Sombrio':{k:'cl'},
+ 'Tubarão Fantasma':{k:'b',hw:12,c2:'#9db4c8',sn:[10,3],fn:12,tt:4,th:6,er:1.8},
+ 'Golem':{k:'gl'},
+ 'Rinoceronte':{k:'b',hw:11,hh:10,sn:[9,5],rh:1,ear:[-6,-9,3.5,'r'],er:1.6},
+ 'Mamute':{k:'b',hw:12,hh:11,c2:'#6a4e36',tr:1,ear:[-7,0,7,'r']},
+ 'Demônio':{k:'dm',c2:'#fbbf24'},
+ 'Ninja Sombrio':{k:'nj'},
+ 'Diabo Alado':{k:'dm',c2:'#fbbf24',w2:1},
+ 'Dragão (Chefe)':{k:'b',c2:'#2a7a38',sn:[13,3],hn:[-3,10,'#d1d5db'],fn:9,ec:'#fde047',er:2.4,tt:3,th:6},
+ 'Tiranossauro (Chefe)':{k:'b',hw:12,hh:11,sn:[10,7],bw:1,tt:4,th:8,ec:'#facc15',er:2.2},
+ 'Kraken (Chefe)':{k:'oc',c2:'#f9a8d4',big:1}
+};
+Object.keys(ES).forEach(k=>{ES[k].hd=HDS[k]});
 let pj=[],SHD=0;
 const mvf=q=>q<0?0:q<.25?q/.25:q<.7?1:(1-q)/.3;
 const GP=sz=>Math.max(0,w*.52-sz*.62);
+/* cabeças desenhadas (viradas para a direita; x0 = centro da cabeça) */
+function head(f,hy,t){
+  const c=ctx,d=f.hd,sk=f.sk,c2=d.c2||sk,x0=3,K=d.k;
+  const e=(x,y,rx,ry,col)=>{c.fillStyle=col;c.beginPath();c.ellipse(x0+x,hy+y,rx,ry,0,0,7);c.fill()};
+  const p=(a,col)=>{c.fillStyle=col;c.beginPath();a.forEach((q,i)=>c[i?'lineTo':'moveTo'](x0+q[0],hy+q[1]));c.closePath();c.fill()};
+  const l=(a,b,u,v,col,w)=>{c.strokeStyle=col;c.lineWidth=w||1.4;c.lineCap='round';c.beginPath();c.moveTo(x0+a,hy+b);c.lineTo(x0+u,hy+v);c.stroke()};
+  const ey=(x,y,r,col)=>{e(x,y,r,r,col||'#fff');e(x+r*.3,y,r*.5,r*.62,'#111')};
+  const fg=(x,y)=>p([[x,y],[x+1.6,y+4.5],[x+3.2,y]],'#fff');
+  if(K==='b'){
+    if(d.ear){const[a,b,r,ty]=d.ear;if(ty==='r')e(a,b,r,r,c2);else p([[a-r,b+r],[a,b-r*2.2],[a+r,b+r]],c2)}
+    if(d.fn)p([[-3,-8],[2,-8-d.fn],[7,-8]],c2);
+    if(d.hn)p([[d.hn[0]-3,-8],[d.hn[0]+1,-8-d.hn[1]],[d.hn[0]+5,-6]],d.hn[2]);
+    e(0,0,d.hw||10,d.hh||9,sk);
+    if(d.mz)e(6,3,6.5,6,d.mz);
+    if(d.sn){const L=d.sn[0],H=d.sn[1];p([[5,-3],[5+L,2],[5+L,3+H],[5,4+H]],d.sc||c2);e(5+L-1,3,1.8,1.8,d.no||'#111')}
+    if(d.rh)p([[11,0],[15,-15],[18,3]],'#e5e1d5');
+    if(d.tr){c.strokeStyle=sk;c.lineWidth=6;c.lineCap='round';c.beginPath();c.moveTo(x0+9,hy+3);c.quadraticCurveTo(x0+18,hy+9,x0+14,hy+19);c.stroke();l(7,6,12,14,'#f5f0e1',3)}
+    e(5,-3,d.er||1.8,d.er||1.8,d.ec||'#111');
+    if(d.bw)l(1,-6,9,-3.5,'#1a1410',2.2);
+    if(d.tk){p([[3,6],[4,-1],[7,6]],'#f5f0e1');p([[9,6],[10.5,0],[13,6]],'#f5f0e1')}
+    for(let i=0;i<(d.tt||0);i++)fg(8+i*3,d.th||6);
+  }
+  else if(K==='blob'){for(let i=0;i<9;i++){const a=i*.7;e(Math.cos(a)*12,Math.sin(a)*12,2.6,2.6,c2)}e(0,0,11,11,sk);ey(0,-3,3.6);ey(7,-3,3.6);l(2,5,9,5,'#14532d',1.6)}
+  else if(K==='sn'){e(2,0,13,8,sk);e(2,3,11,4,c2);e(7,-3,2.6,2.6,'#fde047');l(7,-5.5,7,-.5,'#111',1.3);l(15,3,21,3,'#ef4444',1.4);l(21,3,24,1,'#ef4444',1.2);l(21,3,24,5,'#ef4444',1.2)}
+  else if(K==='bg'){e(0,0,10,9,sk);ey(4,-3,3,'#fecaca');if(d.n)for(let i=0;i<d.n;i++)e(-3+i*3,-7+(i%2)*2.5,1.5,1.5,'#f43f5e');p([[7,5],[17,3],[14,10]],c2);p([[1,7],[9,13],[-2,11]],c2)}
+  else if(K==='sk'){e(0,-1,11,10,'#ece7d3');p([[-6,6],[6,6],[5,12],[-5,12]],'#ddd6bd');for(let i=-4;i<=4;i+=2)l(i,7,i,12,'#6b665a',1);e(-3.5,-2,3.4,4,'#111');e(5,-2,3.4,4,'#111');if(d.g){e(-3.5,-2,1.5,1.8,'#f43f5e');e(5,-2,1.5,1.8,'#f43f5e')}p([[.5,3],[-1,6],[2,6]],'#111');if(d.cr)p([[-9,-9],[-9,-18],[-4,-13],[1,-20],[6,-13],[11,-18],[11,-9]],'#fbbf24')}
+  else if(K==='zb'){e(0,0,10.5,11,sk);p([[-10,-4],[-8,-14],[-3,-10],[1,-15],[5,-9],[10,-12],[10,-3]],'#2a3326');for(const x of[-1,7]){e(x,-2,3,3,'#e8efd5');l(x-2,-4,x+2,0,'#111',1.2);l(x+2,-4,x-2,0,'#111',1.2)}l(-2,6,9,6,'#3a1a1a',1.6);for(const x of[1,4,7])l(x,4,x,8,'#3a1a1a',1)}
+  else if(K==='vp'){e(0,0,10,11,sk);p([[-10,2],[-10,-12],[2,-14],[11,-7],[4,-6],[0,-10],[-4,-5]],'#0b0b12');e(6,-2,2,2.2,'#f43f5e');l(2,-5,9,-3.5,'#0b0b12',1.6);l(2,6,10,6,'#7a0f24',1.4);fg(3,6);fg(8,6)}
+  else if(K==='gb'){p([[-6,-4],[-20,-11],[-7,3]],sk);e(0,0,10,10,sk);e(11,2,4,3,'#4a7a38');e(5,-3,2.6,2.6,'#fde047');e(5.8,-3,1.2,1.6,'#111');l(2,-6,8,-4.5,'#1f3a14',1.8);fg(5,7);fg(9,7)}
+  else if(K==='wi'){p([[-10,-6],[-19,11],[-8,9]],'#9ca3af');e(0,0,10,11,sk);p([[8,0],[17,5],[8,5]],sk);e(14,4,1.4,1.4,'#7c3f1d');e(5,-3,2,2.4,'#fde047');l(2,-6,8,-5,'#111',1.4);l(2,6,9,6,'#7a1f1f',1.4);e(0,-9,15,3.5,'#2d1b4e');p([[-8,-9],[3,-34],[10,-9]],'#3b2266');p([[-7,-13],[8.5,-13],[9.2,-9.5],[-7.5,-9.5]],'#fbbf24')}
+  else if(K==='al'){e(1,-2,12,13,sk);l(-3,-13,-6,-22,sk,1.6);e(-6,-22,2.2,2.2,c2);l(7,-14,10,-22,sk,1.6);e(10,-22,2.2,2.2,c2);p([[0,-6],[12,-3],[10,3],[1,-1]],'#0a0a12');e(8,-1.5,1.1,1.1,'#fff');l(4,8,9,8,'#14532d',1.4)}
+  else if(K==='rb'){c.fillStyle=sk;c.fillRect(x0-10,hy-10,20,19);c.fillStyle='#10202a';c.fillRect(x0-7,hy-6,17,7);e(-1,-2.5,2.2,2.2,'#22d3ee');e(7,-2.5,2.2,2.2,'#22d3ee');for(let i=-5;i<=7;i+=3)l(i,5,i,8,'#44505c',1.2);l(0,-10,0,-17,'#6b7280',2);e(0,-18,2.2,2.2,'#ef4444')}
+  else if(K==='gl'){c.fillStyle=sk;c.fillRect(x0-10,hy-10,21,20);l(-4,-10,-1,-3,'#3b4048',1.4);l(6,10,3,3,'#3b4048',1.4);e(-6,-9,4,2,'#4d7c0f');e(-2,-2,2.4,2,'#fb923c');e(7,-2,2.4,2,'#fb923c');l(-3,6,7,6,'#2a2f36',2)}
+  else if(K==='gh'){c.save();c.shadowColor='#9fc4ff';c.shadowBlur=10;e(0,-1,11,11,sk);p([[-11,6],[-11,13],[-7,10],[-3,14],[1,10],[5,14],[9,10],[11,13],[11,6]],sk);c.restore();e(3,-2,2.2,3,'#111');e(9,-2,2.2,3,'#111');e(6,6,2,3,'#111')}
+  else if(K==='oc'){const R=d.big?13:11;for(let i=0;i<4;i++){c.strokeStyle=c2;c.lineWidth=4;c.lineCap='round';c.beginPath();c.moveTo(x0-6+i*5,hy+8);c.quadraticCurveTo(x0-10+i*5+Math.sin(t/200+i)*3,hy+16,x0-6+i*5+Math.sin(t/200+i)*4,hy+22);c.stroke()}e(0,-2,R,R,sk);e(-5,-8,2,2,c2);e(6,-10,1.6,1.6,c2);ey(1,0,4,'#fef3c7');ey(9,0,4,'#fef3c7')}
+  else if(K==='cl'){e(-9,-4,5,5,'#ef4444');e(0,-11,6,5,'#ef4444');e(0,0,10.5,11,'#fff8f0');e(12,1,3.5,3.5,'#ef4444');ey(5,-3,2.4,'#fff');c.strokeStyle='#ef4444';c.lineWidth=2;c.beginPath();c.arc(x0+3,hy+3,6,.2,2.4);c.stroke();l(3,-6.5,8,-5.5,'#1d4ed8',1.6)}
+  else if(K==='nj'){p([[-10,-5],[-24,-10],[-19,-3]],'#7f1d1d');e(0,0,10.5,11,'#1a1a22');c.fillStyle=sk;c.fillRect(x0-7,hy-5,18,6);e(5,-2,1.6,1.6,'#f8fafc');c.fillStyle='#7f1d1d';c.fillRect(x0-11,hy-8,22,3)}
+  else if(K==='dm'){if(d.w2)p([[-8,-4],[-20,-14],[-14,2]],'#4a1050');p([[-6,-8],[-10,-23],[-1,-9]],'#2a0a12');p([[3,-9],[9,-23],[9,-7]],'#2a0a12');e(0,0,10,11,sk);e(5,-3,2.2,2.2,c2);l(1,-6,9,-3.5,'#1a0505',2);l(2,6,10,6,'#1a0505',1.4);fg(3,6);fg(8,6);p([[2,10],[6,17],[9,10]],'#1a0505')}
+}
 function fig(x,y,sz,dir,a,t,f,boss){
   const u=sz/100*(f.s||1),q=a.l>0?1-a.l:-1,sn=q>=0?Math.sin(Math.PI*q):0,ph=t/(f.eh?330:380)+(dir<0?2:0),br=Math.sin(ph)*1.4,st=q>=0?sn*9:Math.sin(ph*.5)*1.5,rg=['bow','staff','star'].includes(f.w);
   const dn=a.d?a.p:0,flat=a.d===1;let ang=a.d?(flat?2.5:.1):.9+Math.sin(ph)*.05;
@@ -425,7 +521,8 @@ function fig(x,y,sz,dir,a,t,f,boss){
   ctx.fillStyle=f.cl;ctx.beginPath();ctx.moveTo(-10,-72+br*.4);ctx.lineTo(11,-72+br*.4);ctx.lineTo(8,-38);ctx.lineTo(-8,-38);ctx.closePath();ctx.fill();
   ctx.fillStyle=f.tr;ctx.fillRect(-8,-44,16,4);
   const hy=-84-br*.3+(flat?0:dn*9);
-  if(f.eh){ctx.font='30px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(f.eh,3,hy)}
+  if(f.hd)head(f,hy,t);
+  else if(f.eh){ctx.font='30px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(f.eh,3,hy)}
   else{
     dot(3,hy,11,f.sk);
     ctx.fillStyle=f.helm||f.hood||f.hat||f.hair;ctx.beginPath();ctx.arc(3,hy,11.5,Math.PI,0);ctx.fill();
@@ -656,12 +753,14 @@ function authUI(){
   $('au').classList.toggle('hid',!FBON);$('nm').classList.toggle('hid',FBON);
   $('ao').classList.toggle('hid',!!USER);$('ai').classList.toggle('hid',!USER);
   $('nx').classList.toggle('hid',FBON&&!USER);
-  $('mo').classList.toggle('hid',!USER);$('mw').classList.toggle('hid',!USER);
+  $('mo').classList.toggle('hid',!USER);$('md').classList.toggle('hid',!USER);$('mw').classList.toggle('hid',!USER);
   if(USER){
     const n=$('nm').value||'Herói',im=$('avi');
     $('an').textContent=n;$('ab').textContent='⭐ Nível '+lvl+'  •  🏅 '+myBest+' pts';$('avl').textContent=n.charAt(0).toUpperCase();
     if(USER.photoURL){if(im.getAttribute('src')!==USER.photoURL)im.src=USER.photoURL;im.classList.remove('hid')}else im.classList.add('hid');
     $('mwn').textContent='👤 '+n+' • Nível '+lvl+' • 🏅 '+myBest+' pts';
+    const pr=lvl>=6?{p:100,t:'Nível máximo!'}:{p:WN*10,t:'Faltam '+(10-WN)+(10-WN>1?' vitórias':' vitória')+' para o nível '+(lvl+1)};
+    $('pbf').style.width=pr.p+'%';$('pbf2').style.width=pr.p+'%';$('pbt').textContent=pr.t;$('pbt2').textContent=pr.t;
   }
 }
 if(FB.apiKey&&window.firebase){
@@ -710,18 +809,22 @@ async function submit(e){
 /* dados da conta: nível e tutorial feito (/users/<uid>) */
 async function saveUser(){
   if(!DBU||!USER)return;
-  try{const tk=await USER.getIdToken();await fetch(DBU+'/users/'+USER.uid+'.json?auth='+encodeURIComponent(tk),{method:'PUT',body:JSON.stringify({l:lvl,t:!!TUT})})}catch(e){}
+  try{
+    const tk=await USER.getIdToken(),url=DBU+'/users/'+USER.uid+'.json?auth='+encodeURIComponent(tk);
+    const r=await fetch(url,{method:'PUT',body:JSON.stringify({l:lvl,t:!!TUT,p:WN})});
+    if(r.status===401||r.status===403)await fetch(url,{method:'PUT',body:JSON.stringify({l:lvl,t:!!TUT})}); // regras antigas sem o campo "p"
+  }catch(e){}
 }
 async function loadUser(){
   const u=USER;if(!u)return;
-  let st=0,mig='',lo=1;
-  try{TUT=localStorage.getItem('rpgTut_'+u.uid)==='1'?1:0;mig=localStorage.getItem('rpgMig');lo=Math.min(6,Math.max(1,parseInt(localStorage.getItem('rpgLv'),10)||1))}catch(e){TUT=0}
+  let st=0,mig='',lo=1,lw=0;
+  try{TUT=localStorage.getItem('rpgTut_'+u.uid)==='1'?1:0;mig=localStorage.getItem('rpgMig');lo=Math.min(6,Math.max(1,parseInt(localStorage.getItem('rpgLv'),10)||1));lw=Math.min(9,Math.max(0,parseInt(localStorage.getItem('rpgWn'),10)||0))}catch(e){TUT=0}
   try{
     const tk=await u.getIdToken(),r=await jget('/users/'+u.uid+'.json?auth='+encodeURIComponent(tk));
-    if(r&&Number.isFinite(r.l)){lvl=Math.min(6,Math.max(1,r.l|0));if(r.t)TUT=1;st=2}else st=1;
+    if(r&&Number.isFinite(r.l)){lvl=Math.min(6,Math.max(1,r.l|0));WN=Number.isFinite(r.p)?Math.min(9,Math.max(0,r.p|0)):0;if(r.t)TUT=1;st=2}else st=1;
   }catch(e){}
-  if(st===1)lvl=mig?1:lo; // 1º login: aproveita o nível que já estava neste aparelho
-  else if(st===0)lvl=lo;
+  if(st===1){lvl=mig?1:lo;WN=mig?0:lw} // 1º login: aproveita o nível que já estava neste aparelho
+  else if(st===0){lvl=lo;WN=lw}
   try{localStorage.setItem('rpgMig','1');if(TUT)localStorage.setItem('rpgTut_'+u.uid,'1')}catch(e){}
   save();saveUser();authUI();
 }
@@ -733,6 +836,21 @@ async function recDuel(v,n,e){
     const w=((cur&&cur.w)|0)+(v?1:0),g=((cur&&cur.g)|0)+1;
     await fetch(DBU+'/duel/'+u+'.json?auth='+encodeURIComponent(tk),{method:'PUT',body:JSON.stringify({n,e,w,g,v:lvl,d:{'.sv':'timestamp'}})});
   }catch(x){}
+}
+async function delAccount(){
+  const u=USER;if(!u||!AU)return false;
+  const uid=u.uid,pv=new firebase.auth.GoogleAuthProvider();pv.setCustomParameters({prompt:'select_account'});
+  try{
+    const ls=Date.parse((u.metadata&&u.metadata.lastSignInTime)||'')||0;
+    if(Date.now()-ls>240000)await u.reauthenticateWithPopup(pv); // o Google exige login recente para apagar a conta
+    const tk=await u.getIdToken(true);
+    const del=q=>fetch(DBU+q+'.json?auth='+encodeURIComponent(tk),{method:'DELETE'});
+    const rs=await Promise.all([del('/best/'+uid),del('/duel/'+uid),del('/users/'+uid)]);
+    if(rs.some(r=>!r.ok))return false;
+    await u.delete();
+    try{['rpgLv','rpgRk','rpgPd','rpgNm','rpgMig','rpgWn','rpgTut','rpgTut_'+uid].forEach(k=>localStorage.removeItem(k))}catch(e){}
+    return true;
+  }catch(e){return false}
 }
 async function flush(){
   if(!DBU||!USER||!pend.length)return;
@@ -931,7 +1049,10 @@ function fin(v){
   }
   let m=v?'🏆 Vitória! '+s+' pontos.':'💀 Derrotado na sala '+G.r+'. '+s+' pontos.';
   if(USER&&s>myBest){myBest=s;m+='\n🏅 Novo recorde pessoal!'}
-  if(v&&lvl<6){lvl++;m+='\nNível de conta '+lvl+': +5% de vida e ataque!'}
+  if(v){
+    if(lvl>=6)m+='\n⭐ Nível máximo!';
+    else{WN++;if(WN>=10){lvl++;WN=0;m+='\n⭐ Subiu para o nível '+lvl+'! +5% de vida e ataque!'}else m+='\n⭐ Progresso: '+WN+'/10 vitórias para o nível '+(lvl+1)}
+  }
   save();saveUser();
   setTimeout(()=>{$('msg').textContent=m;menu()},4800);
 }
@@ -1139,6 +1260,15 @@ document.addEventListener('click',e=>{const d=$('dm');if(!d.classList.contains('
 $('mp').onclick=()=>{S.click();$('dm').classList.add('hid');$('sq').value='';$('board').classList.add('on');showTop()};
 $('bk').onclick=()=>{S.click();$('board').classList.remove('on')};
 $('mo').onclick=()=>{S.click();$('dm').classList.add('hid');killGame();if(AU)AU.signOut();$('msg').textContent='Você saiu da conta.';menu()};
+$('md').onclick=()=>{S.click();$('dm').classList.add('hid');$('cf').classList.add('on')};
+$('cfn').onclick=()=>{S.click();$('cf').classList.remove('on')};
+$('cfy').onclick=async()=>{
+  S.click();const b=$('cfy');b.disabled=true;$('cfn').disabled=true;b.textContent='APAGANDO...';
+  const ok=await delAccount();
+  b.disabled=false;$('cfn').disabled=false;b.textContent='SIM, APAGAR';$('cf').classList.remove('on');
+  if(ok){killGame();lvl=1;WN=0;TUT=0;myBest=0;rank=[];pend=[];$('nm').value='';$('msg').textContent='Sua conta e todos os seus dados foram apagados.';menu()}
+  else toast('Não foi possível apagar agora. Tente de novo.');
+};
 $('nm').addEventListener('input',()=>$('nm').classList.remove('err'));
 $('nx').onclick=()=>{
   const nm=$('nm');
@@ -1152,7 +1282,9 @@ const TUS=[
  ['⚔️','Atacar e Habilidade','Toque em ATACAR para golpear.\nA HABILIDADE do seu ninja causa muito mais dano e tem efeitos especiais, mas precisa recarregar: o número vermelho mostra quantos turnos faltam.'],
  ['🛡️','Defender','O escudo bloqueia os próximos 2 golpes do inimigo.\nDepois de usar, é preciso esperar 4 turnos para defender de novo.'],
  ['🧪','Kit Médico e tempo','O Kit Médico cura 65 de vida e você começa com 3.\nNão fique parado: se a barrinha amarela acabar, o inimigo ataca!'],
- ['🎁','Recompensas e nível','Ao vencer uma sala, escolha uma recompensa. Os chefes aparecem nas salas 5 e 10.\nCada vitória final sobe o nível da conta: mais vida e ataque, inclusive nos duelos online!']];
+ ['🎁','Recompensas e chefes','Ao vencer uma sala, escolha uma recompensa. Os chefes aparecem nas salas 5 e 10.\nZere as 10 salas para pontuar mais e entrar no ranking!'],
+ ['⭐','Nível da conta','Cada vez que você zera as 10 salas, a barrinha de progresso enche um pouco. A cada 10 vitórias você sobe de nível: +5% de vida e ataque, também nos duelos online.\nVeja quantas faltam no menu ☰.'],
+ ['⏸','Pausa e menu','Toque em ⏸ para pausar quando quiser.\nNo menu ☰ você vê os placares, compartilha o jogo, começa do início ou desiste da partida.']];
 let TI=0,TCB=null;
 function tuShow(){
   const t=TUS[TI];$('tue').textContent=t[0];$('tut').textContent=t[1];$('tux').textContent=t[2];
@@ -1176,6 +1308,7 @@ document.addEventListener('keydown',e=>{
   if(/^[1-4]$/.test(e.key))act(+e.key-1);
 });
 try{if(!FBON)$('nm').value=localStorage.getItem('rpgNm')||''}catch(e){}
+$('ver').textContent='v'+VER;
 menu();flush();
 })();
 </script>

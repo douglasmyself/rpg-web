@@ -15,7 +15,7 @@ Um RPG de masmorra por turnos que roda direto no navegador, no celular ou no com
 - **Duelo online (2 jogadores)** pela internet, com código de sala.
 - **Nível de conta (1 a 6)**: cada vitória completa dá +5% de vida e ataque, inclusive nos duelos.
 - **Tutorial** na primeira partida (guardado na conta, aparece só para quem ainda não viu).
-- **Pausa** durante a partida, com menu para reiniciar, desistir, compartilhar e entrar em contato.
+- **Pausa** durante a partida, com menu para começar do início, desistir, compartilhar e entrar em contato.
 - Funciona como página única, sem instalar nada.
 
 ## 🥷 Os ninjas

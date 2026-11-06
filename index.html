@@ -133,7 +133,7 @@ a.mi{text-decoration:none;display:block}
     <button type="button" class="mi" id="mh">📖 Como jogar</button>
     <button type="button" class="mi" id="ms">📤 Compartilhar</button>
     <a class="mi" id="mt" href="mailto:douglasmyself@outlook.com?subject=O%20Sobrevivente%20-%20Contato">✉️ Contato</a>
-    <button type="button" class="mi hid" id="mr">🔄 Reiniciar do zero</button>
+    <button type="button" class="mi hid" id="mr">🔄 Começar do início</button>
     <button type="button" class="mi hid" id="mq">🚪 Desistir e sair</button>
     <button type="button" class="mi hid" id="mo">🔓 Sair da conta</button>
   </div>
@@ -1101,7 +1101,7 @@ function menuUI(){
   $('mp').classList.toggle('hid',!!PV);
   $('mr').classList.toggle('hid',!(G&&!PV));
   $('mq').classList.toggle('hid',!G);
-  $('mr').textContent='🔄 Reiniciar do zero';delete $('mr').dataset.a;
+  $('mr').textContent='🔄 Começar do início';delete $('mr').dataset.a;
   $('mq').textContent=PV?'🚪 Desistir do duelo':'🚪 Desistir e sair';delete $('mq').dataset.a;
 }
 $('mn').onclick=()=>{

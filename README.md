@@ -13,9 +13,12 @@ Um RPG de masmorra por turnos que roda direto no navegador, no celular ou no com
 - **Login com Google**: seu nome, nível e recorde ficam salvos na sua conta.
 - **Ranking online** com a melhor pontuação de cada jogador, busca por nome e aba de **Duelos**.
 - **Duelo online (2 jogadores)** pela internet, com código de sala.
-- **Nível de conta (1 a 6)**: cada vitória completa dá +5% de vida e ataque, inclusive nos duelos.
-- **Tutorial** na primeira partida (guardado na conta, aparece só para quem ainda não viu).
+- **Nível de conta (1 a 6)**: uma barrinha de progresso enche a cada vez que você zera as 10 salas. A cada **10 vitórias** você sobe de nível e ganha +5% de vida e ataque, inclusive nos duelos. Dá para consultar quantas faltam no menu ☰.
+- **Tutorial** na primeira partida (guardado na conta, aparece só para quem ainda não viu). Dá para rever em **☰ → Como jogar**.
+- **Apagar conta** pelo menu, com confirmação no meio da tela. Remove o login e todos os dados do jogador (nível, progresso, recorde e duelos).
+- **Versão do jogo** discreta no canto da tela, para saber qual atualização está rodando.
 - **Pausa** durante a partida, com menu para começar do início, desistir, compartilhar e entrar em contato.
+- Todos os personagens têm corpo completo, com **cabeças desenhadas** de verdade e poses de vitória e derrota.
 - Funciona como página única, sem instalar nada.
 
 ## 🥷 Os ninjas
@@ -38,6 +41,7 @@ Um RPG de masmorra por turnos que roda direto no navegador, no celular ou no com
 - **Não fique parado:** se a barrinha amarela acabar (5 segundos), o inimigo ataca.
 - **Tempo da sala:** 30 segundos. Se acabar, vence quem tiver mais vida proporcional.
 - **Entre as salas** você recupera 20% da vida e escolhe uma recompensa: +10% de ataque, +20 de vida máxima, +1 Kit Médico ou +15% de dano da habilidade. Os chefes também dão +1 Kit Médico.
+- **Nível da conta:** zerar as 10 salas conta como 1 vitória. Com **10 vitórias** a barrinha enche e você sobe de nível (máximo: 6). Veja quantas faltam em **☰ → menu**.
 - **Pontuação:** `100 × número da sala + 2 × vida restante` a cada sala vencida, mais 1000 pontos ao zerar a masmorra.
 - **Esquivas:** quem se esquiva solta uma risada. 😄
 
@@ -62,7 +66,7 @@ Cada sala sorteia entre três inimigos com a mesma força, então cada partida �
 
 1. Um jogador escolhe **Jogar online → Criar sala** e passa o código de 5 letras.
 2. O outro escolhe **Entrar com código** e digita o código.
-3. Os dois escolhem o ninja e o jogo começa. O nível da conta aumenta o poder de cada jogador.
+3. Os dois escolhem o ninja e o jogo começa. O nível da conta aumenta o poder de cada jogador, e o nível de cada um aparece ao lado do nome.
 4. Se os dois tiverem o mesmo nome, o jogo acrescenta um código curto da conta, como `Douglas #A3F9`.
 
 > O duelo não pausa, pois o outro jogador continua jogando.
@@ -123,6 +127,7 @@ Enquanto o `apiKey` estiver vazio, o jogo funciona sem login e pede o nome digit
         ".write": "auth != null && auth.uid === $uid",
         ".validate": "newData.hasChildren(['l'])",
         "l": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6" },
+        "p": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10" },
         "t": { ".validate": "newData.isBoolean()" },
         "$other": { ".validate": false }
       }
@@ -153,9 +158,21 @@ Enquanto o `apiKey` estiver vazio, o jogo funciona sem login e pede o nome digit
 | Caminho | Conteúdo | Quem lê / escreve |
 |---|---|---|
 | `best/<uid>` | Melhor pontuação da conta (só é trocada por uma maior) | Todos leem, só o dono grava |
-| `users/<uid>` | Nível da conta e se já viu o tutorial | Só o dono |
+| `users/<uid>` | Nível, progresso para o próximo nível e se já viu o tutorial | Só o dono |
 | `duel/<uid>` | Vitórias e partidas de duelo | Todos leem, só o dono grava |
 | `scores` | Ranking antigo, somente leitura | Todos leem, ninguém grava |
+
+## 🔖 Versão do jogo
+
+O número da versão aparece quase transparente no canto inferior direito da tela. Para mudar a cada atualização, edite a constante `VER` no `index.html`:
+
+```js
+const VER='2.0.0';
+```
+
+## 🗑️ Apagar a conta
+
+Em **☰ → Apagar conta** o jogo pede uma confirmação no meio da tela. Se o jogador confirmar, são removidos o registro de recorde, o placar de duelos, o nível e o login Google do jogo. O Google pode pedir para entrar de novo antes de concluir. Isso não pode ser desfeito.
 
 ## 📁 Estrutura
 

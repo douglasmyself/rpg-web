@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3510251888684803" crossorigin="anonymous"></script>
 <meta property="og:image" content="https://douglasmyself.github.io/rpg-web/sua-imagem.PNG">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -94,6 +95,12 @@ a.mi{text-decoration:none;display:block}
 #cfx{font-size:14px;line-height:1.5;color:#d3dde8}
 #cfb{display:flex;gap:10px;width:100%}
 #cfb .b{flex:1}
+#rv,#mx{z-index:16;background:rgba(7,9,13,.82)}
+#rvc,#mxc{max-width:340px}
+#rve,#mxe{font-size:44px;line-height:1}
+#rvx,#mxx{font-size:14px;line-height:1.5;color:#d3dde8}
+#rvb{display:flex;gap:10px;width:100%}
+#rvb .b{flex:1}
 #ver{position:fixed;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 3px);font:600 10px 'Rajdhani',system-ui,sans-serif;letter-spacing:.5px;opacity:.33;color:#cbd5e1;pointer-events:none;z-index:30}
 /* tutorial e abas */
 #tue{font-size:clamp(54px,16vw,80px);line-height:1}
@@ -230,6 +237,20 @@ a.mi{text-decoration:none;display:block}
       <div id="cfb"><button class="b a3" id="cfn">CANCELAR</button><button class="b rd" id="cfy">SIM, APAGAR</button></div>
     </div>
   </div>
+  <div id="rv" class="ov">
+    <div class="card" id="rvc">
+      <div id="rve">💀</div><h2>Você foi derrotado!</h2>
+      <p id="rvx">Assista a um anúncio para recuperar toda a vida e continuar de onde parou.</p>
+      <div id="rvb"><button class="b a3" id="rvn">DESISTIR</button><button class="b g" id="rvy">📺 ASSISTIR ANÚNCIO</button></div>
+    </div>
+  </div>
+  <div id="mx" class="ov">
+    <div class="card" id="mxc">
+      <div id="mxe">🏆</div><h2>Parabéns!</h2>
+      <p id="mxx">Você chegou ao nível máximo (nível 10)! Obrigado por jogar, você é um verdadeiro sobrevivente. 🎉</p>
+      <button class="b g" id="mxo">CONTINUAR</button>
+    </div>
+  </div>
   <div id="ts" class="hid"></div>
   <div id="buff" class="ov">
     <h2>🎁 Sala concluída! Escolha uma recompensa</h2>
@@ -274,7 +295,15 @@ const ICE=[
  {urls:'stun:global.stun.twilio.com:3478'},
  {urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}
 ].concat(TURN_EXTRA);
-const VER='2.0.0'; // mude este número a cada atualização: ele aparece no cantinho da tela
+const VER='2.1.0'; // mude este número a cada atualização: ele aparece no cantinho da tela
+const MAXLV=10; // nível máximo da conta
+const LVB=.02; // bônus de vida e ataque por nível (2%)
+const SKB=1.10; // bônus da recompensa "Habilidade +10% de dano"
+/* ANÚNCIO PREMIADO (continuar após derrota no solo)
+   - Com o Google AdSense "H5 Games Ads" carregado na página (função adBreak), o anúncio real é usado.
+   - Sem o SDK, SIM_AD=true mostra um anúncio SIMULADO de 5s só para testar. Antes de publicar para valer,
+     coloque o script do AdSense no <head> e mude SIM_AD para false (assim ninguém continua sem ver anúncio). */
+const SIM_AD=true;
 const IDLE=5; // segundos parado antes do inimigo atacar (ou de perder a vez no online)
 
 const H=[
@@ -299,7 +328,7 @@ let FBON=false,AU=null,USER=null,myBest=0,PZ=0,CDS=null,TAB='s',TUT=0,TOPD=[],TG
 const okE=x=>x&&typeof x.n==='string'&&typeof x.e==='string'&&Number.isFinite(x.s);
 const okD=x=>x&&typeof x.n==='string'&&typeof x.e==='string'&&Number.isFinite(x.w)&&Number.isFinite(x.g);
 try{
-  lvl=Math.min(6,Math.max(1,parseInt(localStorage.getItem('rpgLv'),10)||1));
+  lvl=Math.min(MAXLV,Math.max(1,parseInt(localStorage.getItem('rpgLv'),10)||1));
   WN=Math.min(9,Math.max(0,parseInt(localStorage.getItem('rpgWn'),10)||0));
   const r=JSON.parse(localStorage.getItem('rpgRk')||'[]');
   if(Array.isArray(r))rank=r.filter(okE).slice(0,10);
@@ -742,7 +771,7 @@ function pickui(){
   $('hd').textContent='✨ '+H[sel].s.n+': '+H[sel].s.d;
 }
 function menu(){
-  G=null;E=null;BQ.length=0;CDN=null;clearInterval(CI);$('pick').classList.remove('on');$('net').classList.remove('on');
+  G=null;E=null;BQ.length=0;CDN=null;clearInterval(CI);clearInterval(AI);AI=0;$('rv').classList.remove('on');$('pick').classList.remove('on');$('net').classList.remove('on');
   $('mn').style.visibility='visible';$('mn').textContent='☰';$('tt').style.visibility='hidden';PZ=0;$('pz').classList.remove('on');$('menu').classList.add('on');$('board').classList.remove('on');$('dm').classList.add('hid');
   $('sq').value='';ID=IDLE;authUI();
   Promise.resolve(SUBP).then(showTop);
@@ -759,7 +788,7 @@ function authUI(){
     $('an').textContent=n;$('ab').textContent='⭐ Nível '+lvl+'  •  🏅 '+myBest+' pts';$('avl').textContent=n.charAt(0).toUpperCase();
     if(USER.photoURL){if(im.getAttribute('src')!==USER.photoURL)im.src=USER.photoURL;im.classList.remove('hid')}else im.classList.add('hid');
     $('mwn').textContent='👤 '+n+' • Nível '+lvl+' • 🏅 '+myBest+' pts';
-    const pr=lvl>=6?{p:100,t:'Nível máximo!'}:{p:WN*10,t:'Faltam '+(10-WN)+(10-WN>1?' vitórias':' vitória')+' para o nível '+(lvl+1)};
+    const pr=lvl>=MAXLV?{p:100,t:'🎉 Nível máximo!'}:{p:WN*10,t:'Faltam '+(10-WN)+(10-WN>1?' vitórias':' vitória')+' para o nível '+(lvl+1)};
     $('pbf').style.width=pr.p+'%';$('pbf2').style.width=pr.p+'%';$('pbt').textContent=pr.t;$('pbt2').textContent=pr.t;
   }
 }
@@ -818,10 +847,10 @@ async function saveUser(){
 async function loadUser(){
   const u=USER;if(!u)return;
   let st=0,mig='',lo=1,lw=0;
-  try{TUT=localStorage.getItem('rpgTut_'+u.uid)==='1'?1:0;mig=localStorage.getItem('rpgMig');lo=Math.min(6,Math.max(1,parseInt(localStorage.getItem('rpgLv'),10)||1));lw=Math.min(9,Math.max(0,parseInt(localStorage.getItem('rpgWn'),10)||0))}catch(e){TUT=0}
+  try{TUT=localStorage.getItem('rpgTut_'+u.uid)==='1'?1:0;mig=localStorage.getItem('rpgMig');lo=Math.min(MAXLV,Math.max(1,parseInt(localStorage.getItem('rpgLv'),10)||1));lw=Math.min(9,Math.max(0,parseInt(localStorage.getItem('rpgWn'),10)||0))}catch(e){TUT=0}
   try{
     const tk=await u.getIdToken(),r=await jget('/users/'+u.uid+'.json?auth='+encodeURIComponent(tk));
-    if(r&&Number.isFinite(r.l)){lvl=Math.min(6,Math.max(1,r.l|0));WN=Number.isFinite(r.p)?Math.min(9,Math.max(0,r.p|0)):0;if(r.t)TUT=1;st=2}else st=1;
+    if(r&&Number.isFinite(r.l)){lvl=Math.min(MAXLV,Math.max(1,r.l|0));WN=Number.isFinite(r.p)?Math.min(9,Math.max(0,r.p|0)):0;if(r.t)TUT=1;st=2}else st=1;
   }catch(e){}
   if(st===1){lvl=mig?1:lo;WN=mig?0:lw} // 1º login: aproveita o nível que já estava neste aparelho
   else if(st===0){lvl=lo;WN=lw}
@@ -946,7 +975,7 @@ function resumeGame(){
   if(CDS)cdRun();music();$('pz').classList.remove('on');$('dm').classList.add('hid');
 }
 function killGame(){
-  GT.forEach(o=>_ct(o.id));GT.clear();clearInterval(CI);CDS=null;PZ=0;live=0;busy=0;
+  GT.forEach(o=>_ct(o.id));GT.clear();clearInterval(CI);clearInterval(AI);AI=0;$('rv').classList.remove('on');CDS=null;PZ=0;live=0;busy=0;
   BQ.length=0;CDN=null;ps=[];fx=[];pj=[];VX=[];$('pz').classList.remove('on');$('buff').classList.remove('on');closeNet();
 }
 function next(){
@@ -1021,7 +1050,7 @@ function foe(){
     else if(gd){G.def--;ft('h','🛡️ Bloqueou!','#58a6ff');burst('h','#58a6ff',14);S.click();A.sh=3;log('🛡️ O escudo bloqueou o golpe de '+E.n+'! Restam '+G.def+' proteção(ões).')}
     else{G.hp=Math.max(0,G.hp-d);A.h.f=1;A.sh=heavy?14:6;burst('h','#ff5a5a',12);ft('h',(cr?'💥-':'-')+d,'#ff7b7b');S.hurt();log((heavy?'💢 Golpe pesado! ':'💥 ')+E.n+' causou '+d+' de dano.')}
     if(G.cd>0)G.cd--;if(G.dc>0)G.dc--;
-    if(G.hp<=0){A.h.d=1+(Math.random()<.5|0);A.e.v=1;setTimeout(()=>log('💀 Você foi derrotado...'),2200);return fin(0)}
+    if(G.hp<=0){A.h.d=1+(Math.random()<.5|0);A.e.v=1;setTimeout(()=>log('💀 Você foi derrotado...'),2200);return lose()}
     if(E.b&&(E.t+1)%3===0)log('⚠️ '+E.n+' carrega um golpe pesado! Defenda!');
     busy=0;ID=IDLE;ui();
   },360);
@@ -1035,14 +1064,46 @@ function win(){
   },4600);
 }
 function showBuff(){
-  const P2=[['⚔️ +10% de ataque',()=>{G.a=Math.round(G.a*1.10)}],['❤️ +20 de vida máxima',()=>{G.mx+=20;G.hp=Math.min(G.mx,G.hp+20)}],['🧪 +1 Kit Médico',()=>{G.k++}],['🔮 Habilidade +15% de dano',()=>{G.sm*=1.15}]].sort(()=>Math.random()-.5).slice(0,3);
+  const P2=[['⚔️ +10% de ataque',()=>{G.a=Math.round(G.a*1.10)}],['❤️ +20 de vida máxima',()=>{G.mx+=20;G.hp=Math.min(G.mx,G.hp+20)}],['🧪 +1 Kit Médico',()=>{G.k++}],['🔮 Habilidade +10% de dano',()=>{G.sm*=SKB}]].sort(()=>Math.random()-.5).slice(0,3);
   const o=$('bo');o.textContent='';
   P2.forEach(p=>{const b=document.createElement('button');b.className='b g';b.textContent=p[0];b.onclick=()=>{p[1]();$('buff').classList.remove('on');S.heal();G.r++;next()};o.appendChild(b)});
   $('buff').classList.add('on');$('mn').style.visibility='hidden';$('dm').classList.add('hid');
 }
-function fin(v){
+let CONG=0,AI=0;
+/* Derrota no solo: oferece continuar com a vida cheia depois de assistir a um anúncio (toda vez que perder) */
+function lose(){
+  live=0;busy=1;ui();
+  setTimeout(()=>{
+    if(!G||PV)return;
+    S.lose();$('mn').style.visibility='hidden';$('dm').classList.add('hid');
+    $('rvy').disabled=false;$('rvn').disabled=false;$('rvy').textContent='📺 ASSISTIR ANÚNCIO';
+    $('rv').classList.add('on');
+  },2600);
+}
+function rewardedAd(){
+  return new Promise(res=>{
+    let done=0;const end=v=>{if(!done){done=1;clearTimeout(tt);res(v)}};
+    const tt=_st(()=>end(false),60000); // segurança: se o anúncio não responder, libera os botões
+    if(typeof window.adBreak==='function'){
+      try{window.adBreak({type:'reward',name:'continuar-partida',beforeReward:show=>show(),adViewed:()=>end(true),adDismissed:()=>end(false),adBreakDone:()=>end(false)})}catch(e){end(false)}
+    }else if(SIM_AD){
+      let n=5;const b=$('rvy');b.textContent='📺 ANÚNCIO... '+n+'s';
+      clearInterval(AI);AI=setInterval(()=>{n--;if(n>0)b.textContent='📺 ANÚNCIO... '+n+'s';else{clearInterval(AI);AI=0;end(true)}},1000);
+    }else end(false);
+  });
+}
+async function revive(){
+  const y=$('rvy'),n=$('rvn');y.disabled=true;n.disabled=true;
+  const ok=await rewardedAd();
+  if(!G||!$('rv').classList.contains('on'))return; // saiu da partida enquanto o anúncio rodava
+  if(!ok){y.disabled=false;n.disabled=false;y.textContent='📺 ASSISTIR ANÚNCIO';toast('Anúncio indisponível agora. Tente de novo.');return}
+  $('rv').classList.remove('on');
+  G.hp=G.mx;G.def=0;A.h.d=0;A.h.v=0;A.e.d=0;A.e.v=0;TM=30;ID=IDLE;busy=0;live=1;
+  S.heal();burst('h','#4ade80',24);ft('h','❤️ Vida cheia!','#4ade80');log('📺 Você recuperou toda a vida! Continue a luta!');ui();
+}
+function fin(v,quick){
   live=0;busy=1;const s=G.sc+(v?1000:0);
-  if(!v)S.lose();
+  if(!v&&!quick)S.lose();
   if(s>0){
     rank.push({n:G.n,e:G.h.e,s,d:Date.now()});rank.sort((a,b)=>b.s-a.s);rank=rank.slice(0,10);
     SUBP=submit({n:G.n,e:G.h.e,s,v:lvl}); // envia para o ranking online (só substitui se for recorde da conta)
@@ -1050,11 +1111,11 @@ function fin(v){
   let m=v?'🏆 Vitória! '+s+' pontos.':'💀 Derrotado na sala '+G.r+'. '+s+' pontos.';
   if(USER&&s>myBest){myBest=s;m+='\n🏅 Novo recorde pessoal!'}
   if(v){
-    if(lvl>=6)m+='\n⭐ Nível máximo!';
-    else{WN++;if(WN>=10){lvl++;WN=0;m+='\n⭐ Subiu para o nível '+lvl+'! +5% de vida e ataque!'}else m+='\n⭐ Progresso: '+WN+'/10 vitórias para o nível '+(lvl+1)}
+    if(lvl>=MAXLV)m+='\n⭐ Nível máximo!';
+    else{WN++;if(WN>=10){lvl++;WN=0;m+='\n⭐ Subiu para o nível '+lvl+'! +2% de vida e ataque!';if(lvl>=MAXLV){CONG=1;m+='\n🎉 Parabéns! Você chegou ao nível máximo!'}}else m+='\n⭐ Progresso: '+WN+'/10 vitórias para o nível '+(lvl+1)}
   }
   save();saveUser();
-  setTimeout(()=>{$('msg').textContent=m;menu()},4800);
+  setTimeout(()=>{$('msg').textContent=m;menu();if(CONG){CONG=0;$('mx').classList.add('on')}},quick?700:4800);
 }
 
 function timeUp(){
@@ -1063,7 +1124,7 @@ function timeUp(){
   if(PV){if(PV.host){const w=a>=b?'h':'g';send({t:'end',w});pvFin(w==='h')}return}
   live=0;busy=1;ui();
   if(a>=b){log('⏱️ Tempo esgotado! Você tem mais vida e vence a sala!');win()}
-  else{log('⏱️ Tempo esgotado! '+E.n+' tem mais vida...');A.h.d=1+(Math.random()<.5|0);A.e.v=1;fin(0)}
+  else{log('⏱️ Tempo esgotado! '+E.n+' tem mais vida...');A.h.d=1+(Math.random()<.5|0);A.e.v=1;lose()}
 }
 /* ===== ONLINE (PeerJS, 2 jogadores) ===== */
 const cn=v=>String(v||'').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,12)||'Herói';
@@ -1127,7 +1188,7 @@ function pvSetup(c,host){
   });
 }
 function myTag(){return USER?USER.uid.slice(-4).toUpperCase():(TGS||(TGS=rc().slice(0,4)))}
-function oinfo(m){return{n:cn(m.n),h:num(m.h,0,H.length-1)|0,lv:num(m.lv,1,6)|0,tg:String(m.tg||'').replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase()}}
+function oinfo(m){return{n:cn(m.n),h:num(m.h,0,H.length-1)|0,lv:num(m.lv,1,MAXLV)|0,tg:String(m.tg||'').replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase()}}
 function onData(m){
   if(!m||typeof m!=='object'||!PV)return;
   if(m.t==='hi'&&PV.host&&!G){PV.o=oinfo(m);const f=Math.random()<.5?'h':'g',th=pickTh();send({t:'go',f,th,n:cn($('nm').value),h:sel,lv:lvl,tg:myTag()});startPv(f==='h',th)}
@@ -1146,7 +1207,7 @@ function onData(m){
 }
 function startPv(first,th){
   clearTimeout(CT);
-  const x=H[sel],o=PV.o,oh=H[o.h],bn=1+.05*(lvl-1),ob=1+.05*(o.lv-1),mn=cn($('nm').value),same=o.n.toLowerCase()===mn.toLowerCase();
+  const x=H[sel],o=PV.o,oh=H[o.h],bn=1+LVB*(lvl-1),ob=1+LVB*(o.lv-1),mn=cn($('nm').value),same=o.n.toLowerCase()===mn.toLowerCase();
   G={n:same?mn+' #'+myTag():mn,h:x,hp:Math.round(x.hp*bn),mx:Math.round(x.hp*bn),a:Math.round(x.a*bn),k:3,cd:0,def:0,sm:1,sc:0,r:1,th:th|0,lv:lvl};
   E={n:same&&o.tg?o.n+' #'+o.tg:o.n,e:oh.e,hp:Math.round(oh.hp*ob),mx:Math.round(oh.hp*ob),a:Math.round(oh.a*ob),b:0,t:0,f:oh.f,def:0,lv:o.lv};
   A={h:{l:0,f:0,d:0,p:0},e:{l:0,f:0,d:0,p:0},sh:0};ps=[];fx=[];pj=[];VX=[];L=[];
@@ -1283,7 +1344,7 @@ const TUS=[
  ['🛡️','Defender','O escudo bloqueia os próximos 2 golpes do inimigo.\nDepois de usar, é preciso esperar 4 turnos para defender de novo.'],
  ['🧪','Kit Médico e tempo','O Kit Médico cura 65 de vida e você começa com 3.\nNão fique parado: se a barrinha amarela acabar, o inimigo ataca!'],
  ['🎁','Recompensas e chefes','Ao vencer uma sala, escolha uma recompensa. Os chefes aparecem nas salas 5 e 10.\nZere as 10 salas para pontuar mais e entrar no ranking!'],
- ['⭐','Nível da conta','Cada vez que você zera as 10 salas, a barrinha de progresso enche um pouco. A cada 10 vitórias você sobe de nível: +5% de vida e ataque, também nos duelos online.\nVeja quantas faltam no menu ☰.'],
+ ['⭐','Nível da conta','Cada vez que você zera as 10 salas, a barrinha de progresso enche um pouco. A cada 10 vitórias você sobe de nível (até o 10): +2% de vida e ataque, também nos duelos online.\nVeja quantas faltam no menu ☰.'],
  ['⏸','Pausa e menu','Toque em ⏸ para pausar quando quiser.\nNo menu ☰ você vê os placares, compartilha o jogo, começa do início ou desiste da partida.']];
 let TI=0,TCB=null;
 function tuShow(){
@@ -1295,16 +1356,19 @@ function tuOpen(cb){TI=0;TCB=cb||null;if(cb)$('pick').classList.remove('on');$('
 function tuEnd(){$('tu').classList.remove('on');const cb=TCB;TCB=null;if(cb){markTut();cb()}}
 function startSolo(){if(TUT)startSolo2();else tuOpen(startSolo2)}
 function startSolo2(){
-  const bn=1+.05*(lvl-1),n=$('nm').value.replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,12)||'Herói',x=H[sel];
+  const bn=1+LVB*(lvl-1),n=$('nm').value.replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,12)||'Herói',x=H[sel];
   G={n,h:x,hp:Math.round(x.hp*bn),mx:Math.round(x.hp*bn),a:Math.round(x.a*bn),k:3,cd:0,def:0,sm:1,sc:0,r:1,th:pickTh(),lv:lvl};
   ps=[];fx=[];VX=[];L=[];$('pick').classList.remove('on');next();music();
 }
+$('rvy').onclick=()=>{S.click();revive()};
+$('rvn').onclick=()=>{S.click();$('rv').classList.remove('on');fin(0,1)};
+$('mxo').onclick=()=>{S.click();$('mx').classList.remove('on')};
 $('go').onclick=()=>{ac();S.click();startSolo()};
 $('nm').addEventListener('keydown',e=>{if(e.key==='Enter')$('nx').click()});
 $('sf').addEventListener('submit',e=>{e.preventDefault();search()});
 $('stp').onclick=()=>{$('sq').value='';showTop()};
 document.addEventListener('keydown',e=>{
-  if($('menu').classList.contains('on')||$('pick').classList.contains('on')||$('buff').classList.contains('on')||$('net').classList.contains('on'))return;
+  if($('menu').classList.contains('on')||$('pick').classList.contains('on')||$('buff').classList.contains('on')||$('net').classList.contains('on')||$('rv').classList.contains('on'))return;
   if(/^[1-4]$/.test(e.key))act(+e.key-1);
 });
 try{if(!FBON)$('nm').value=localStorage.getItem('rpgNm')||''}catch(e){}
